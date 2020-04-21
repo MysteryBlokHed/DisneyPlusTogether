@@ -30,6 +30,25 @@ class DisneyPlusTogether {
             // Message was an error of some kind
             } else if(event.data.substring(0, 5) == "FAIL:") {
                 console.error(event.data.substring(5));
+            
+            // Message was to play the video
+            } else if(event.data.substring(0, 4) == "PLAY") {
+                console.log("Playing video...");
+                document.getElementsByTagName("video")[0].play();
+            
+            // Message was to pause the video
+            } else if(event.data.substring(0, 5) == "PAUSE") {
+                console.log("Pausing video...");
+                document.getElementsByTagName("video")[0].pause();
+            
+            // Message was a new video position
+            } else if(event.data.substring(0, 4) == "POS:") {
+                console.log("Setting video time to " + event.data.substring(4));
+                document.getElementsByTagName("video")[0].currentTime = parseFloat(event.data.substring(4));
+            
+            // Unknown message
+            } else {
+                console.log("Unknown message: " + event.data);
             }
         });
     }

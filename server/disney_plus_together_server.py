@@ -61,30 +61,37 @@ async def main(websocket, path):
         
         # Client requesting to join group
         elif message[:11] == "JOIN_GROUP:":
-            print(f"Group join request from {websocket.local_address} with session token {message[11:35]}.")
+            # Get parameters
+            try:
+                params = message.split(":")
+                params[2]
+            except IndexError:
+                # Client did not provide enough parameters to join group
+                await websocket.send("FAIL:JG_MISSING_PARAMETERS")
+            
+            print(f"Group join request from {websocket.local_address} with session token {params[1]}.")
             # Check if a valid session token was provided
-            if message[11:35] in sessions:
+            if params[1] in sessions:
                 # Valid session
-                print(f"Token {message[11:35]} verified.")
+                print(f"Token {params[1]} verified.")
 
                 # Check if client is already in a group
                 in_group = False
                 for group in groups:
-                    if sessions[message[11:35]] in groups[group]:
+                    if sessions[params[1]] in groups[group]:
                         in_group = True
 
                 if not in_group:
-                    # Try to the client to the group
+                    # Try to add the client to the group
                     try:
-                        params = message.split(":")
-                        groups[params[2]].append(params[1])
+                        groups[params[2]].append(sessions[params[1]])
                         await websocket.send("JG:" + params[2])
-                    except IndexError:
-                        # Client did not provide enough parameters to join group
-                        await websocket.send("FAIL:JG_MISSING_PARAMETERS")
                     except KeyError:
                         # Client provided invalid group
                         await websocket.send("FAIL:JG_INVALID_GROUP")
+                    except:
+                        # Other error
+                        await websocket.send("FAIL:JG_UNKNOWN_ERROR")
                 else:
                     # Client is already in a group
                     await websocket.send("FAIL:JG_IN_GROUP")
@@ -92,6 +99,48 @@ async def main(websocket, path):
                 # Invalid session
                 print(f"Invalid token {message[13:43]}.")
                 await websocket.send("FAIL:JG_BAD_SESSION")
+        
+        # Client requesting to play/pause video
+        elif message[:5] == "PLAY:" or message[:6] == "PAUSE:":
+            # Get parameters
+            try:
+                params = message.split(":")
+                params[2]
+            except IndexError:
+                # Client did not provide enough parameters to join group
+                await websocket.send("FAIL:PV_MISSING_PARAMETERS")
+            
+            # Check if client created the group (first member of the group)
+            try:
+                if groups[params[2]][0] == websocket:
+                    # Send all group members the play instruction
+                    if message[:4] == "PLAY":
+                        for ws in groups[params[2]]:
+                            await ws.send("PLAY")
+                    else:
+                        for ws in groups[params[2]]:
+                            await ws.send("PAUSE")
+            except KeyError:
+                await websocket.send("FAIL:PV_INVALID_GROUP")
+        
+        # Client requesting to set video time
+        elif message[:8] == "SET_POS:":
+            # Get parameters
+            try:
+                params = message.split(":")
+                params[3]
+            except IndexError:
+                # Client did not provide enough parameters to join group
+                await websocket.send("FAIL:SP_MISSING_PARAMETERS")
+            
+            # Check if client created the group (first member of the group)
+            try:
+                if groups[params[2]][0] == websocket:
+                    # Send all group members the set instruction
+                    for ws in groups[params[2]]:
+                        await ws.send(f"POS:{params[3]}")
+            except KeyError:
+                await websocket.send("FAIL:SP_INVALID_GROUP")
 
 # Run WebSocket
 asyncio.get_event_loop().run_until_complete(
