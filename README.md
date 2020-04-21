@@ -1,7 +1,7 @@
 # Disney Plus Together
 <!-- Shields.io Badges -->
-[![Release](https://img.shields.io/github/v/release/MysteryBlokHed/Disney-Plus-Together?style=flat-square)](https://github.com/MysteryBlokHed/Disney-Plus-Together/releases)
-[![License](https://img.shields.io/github/license/MysteryBlokHed/Disney-Plus-Together?style=flat-square)](https://github.com/MysteryBlokHed/Disney-Plus-Together/blob/master/LICENSE)
+[![Release](https://img.shields.io/github/v/release/MysteryBlokHed/DisneyPlusTogether?style=flat-square)](https://github.com/MysteryBlokHed/DisneyPlusTogether/releases)
+[![License](https://img.shields.io/github/license/MysteryBlokHed/DisneyPlusTogether?style=flat-square)](https://github.com/MysteryBlokHed/DisneyPlusTogether/blob/master/LICENSE)
 [![Python](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue?style=flat-square)](https://www.python.org/downloads/)
 <!-- End of Badges -->
 A Chromium extension to allow people to sync movies and TV shows on Disney Plus.
