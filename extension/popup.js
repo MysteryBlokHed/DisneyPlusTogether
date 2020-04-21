@@ -16,10 +16,18 @@ class DisneyPlusTogether {
             if(event.data.substring(0, 4) == "STK:") {
                 this._stk = event.data.substring(4);
                 console.log("Received token: " + this._stk);
+
             // Message was a group token for a created group
             } else if(event.data.substring(0, 5) == "CGTK:") {
                 this._gtk = event.data.substring(5);
                 console.log("Created group: " + this._gtk);
+            
+            // Message was a group join confirmation
+            } else if(event.data.substring(0, 3) == "JG:") {
+                this._gtk = event.data.substring(3);
+                console.log("Joined group: " + this._gtk);
+
+            // Message was an error of some kind
             } else if(event.data.substring(0, 5) == "FAIL:") {
                 console.error(event.data.substring(5));
             }
@@ -29,6 +37,26 @@ class DisneyPlusTogether {
     createGroup() {
         // Request to create a group
         this._ws.send("CREATE_GROUP:" + this._stk);
+    }
+
+    joinGroup(gtk) {
+        // Request to join group
+        this._ws.send(`JOIN_GROUP:${this._stk}:${gtk}`);
+    }
+
+    playVideo() {
+        // Play the video
+        this._ws.send(`PLAY:${this._stk}:${this._gtk}`);
+    }
+
+    pauseVideo() {
+        // Pause the video
+        this._ws.send(`PAUSE:${this._stk}:${this._gtk}`);
+    }
+
+    setVideoPosition(position) {
+        // Set the current position in the video
+        this._ws.send(`SET_POS:${this._stk}:${this._gtk}:${position}`);
     }
 };
 

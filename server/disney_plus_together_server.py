@@ -1,15 +1,16 @@
 # Created by Adam Thompson-Sharpe on 20/04/2020.
 # Licensed under MIT.
 import asyncio
-import base64
-import os
+import secrets
 import websockets
 
 PORT = 2626
 
-# Manage sessions/groups
+# Bind sessions to websockets (token: websockets.WebSocketClientProtocol)
 sessions = {}
-groups = []
+
+# Manage groups of websockets to send video commands
+groups = {}
 
 # Main function
 async def main(websocket, path):
@@ -19,9 +20,9 @@ async def main(websocket, path):
             print(f"Session token request from {websocket.local_address}.")
             while True:
                 # Generate a session token and see if it's not taken
-                tk = base64.b64encode(os.urandom(16)).decode("utf-8")
+                tk = secrets.token_hex(12)
                 if tk not in sessions:
-                    sessions[tk] = None
+                    sessions[tk] = websocket
                     await websocket.send(f"STK:{tk}")
                     print(f"Giving session token {tk} to {websocket.local_address}.")
                     break
@@ -34,25 +35,63 @@ async def main(websocket, path):
                 # Valid session
                 print(f"Token {message[13:]} verified.")
 
-                # Generate a group token and see if it's not taken
-                while True:
-                    tk = base64.b64encode(os.urandom(16)).decode("utf-8")
-                    if tk not in groups:
-                        # Add group token to groups list and set the creator's group
-                        groups.append(tk)
-                        sessions[message[13:]] = tk
-                        await websocket.send(f"CGTK:{tk}")
-                        print(f"Giving group token {tk} to {websocket.local_address} with session token {message[13:]}.")
-                        break
+                # Check if client is already in a group
+                in_group = False
+                for group in groups:
+                    if sessions[message[13:]] in groups[group]:
+                        in_group = True
+
+                if not in_group:
+                    # Generate a group token and see if it's not taken
+                    while True:
+                        tk = secrets.token_hex(12)
+                        if tk not in groups:
+                            # Add group token to groups list and set the creator's group
+                            groups[tk] = [sessions[message[13:]]]
+                            await websocket.send(f"CGTK:{tk}")
+                            print(f"Giving group token {tk} to {websocket.local_address} with session token {message[13:]}.")
+                            break
+                else:
+                    # Client is already in a group
+                    await websocket.send("FAIL:CG_IN_GROUP")
             else:
                 # Invalid session
                 print(f"Invalid token {message[13:]}.")
-                await websocket.send("FAIL:CG_FAIL_BAD_SESSION")
+                await websocket.send("FAIL:CG_BAD_SESSION")
         
         # Client requesting to join group
-        elif message[:12] == "JOIN_GROUP:":
+        elif message[:11] == "JOIN_GROUP:":
+            print(f"Group join request from {websocket.local_address} with session token {message[11:35]}.")
             # Check if a valid session token was provided
-            pass
+            if message[11:35] in sessions:
+                # Valid session
+                print(f"Token {message[11:35]} verified.")
+
+                # Check if client is already in a group
+                in_group = False
+                for group in groups:
+                    if sessions[message[11:35]] in groups[group]:
+                        in_group = True
+
+                if not in_group:
+                    # Try to the client to the group
+                    try:
+                        params = message.split(":")
+                        groups[params[2]].append(params[1])
+                        await websocket.send("JG:" + params[2])
+                    except IndexError:
+                        # Client did not provide enough parameters to join group
+                        await websocket.send("FAIL:JG_MISSING_PARAMETERS")
+                    except KeyError:
+                        # Client provided invalid group
+                        await websocket.send("FAIL:JG_INVALID_GROUP")
+                else:
+                    # Client is already in a group
+                    await websocket.send("FAIL:JG_IN_GROUP")
+            else:
+                # Invalid session
+                print(f"Invalid token {message[13:43]}.")
+                await websocket.send("FAIL:JG_BAD_SESSION")
 
 # Run WebSocket
 asyncio.get_event_loop().run_until_complete(
