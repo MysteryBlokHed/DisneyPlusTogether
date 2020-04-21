@@ -15,7 +15,7 @@ The extension is JavaScript and does not need anything else to be run. The serve
 - `websockets>=8.1` - Get with `python` or `python3 -m pip install "websockets>=8.1"`
 
 ## Installing the client
-The Chromium extension is inside the `/extensions` folder in the repository.
+The Chromium extension is inside the `/extension` folder in the repository.
 
 1. Go to the extensions page (`chrome://extensions` or `edge://extensions`)
 2. Enable developer mode (top-right for Chrome, bottom-left for Edge)
