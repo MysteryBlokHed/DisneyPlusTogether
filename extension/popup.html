@@ -4,19 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Disney Plus Together</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans" type="text/css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300&display=swap" type="text/css">
     <style>
         * {
-            font-family: 'Open Sans';
+            font-family: 'Manrope', sans-serif;
+            font-weight: 200;
+            text-align: center;
         }
 
-        h1 {
+        button, input {
+            font-weight: 300;
+            margin-bottom: 5px;
+        }
+
+        h1, h2 {
             margin-top: 0px;
+            margin-bottom: 0px;
         }
     </style>
 </head>
 <body>
+    <img width="150" height="150" src="images/icon_large.png" alt="Disney Plus Together">
     <h1>Disney Plus Together</h1>
+    <label for="server">Server:</label>
+    <input type="text" id="server" placeholder="127.0.0.1">
+    <button onclick="setServer(document.getElementById('server'));">Set Server</button>
+    <br>
+    <input type="text" id="groupJoinId" placeholder="Group ID...">
+    <button onclick="join(document.getElementById('groupJoinId'));">Join a Group</button>
+    <br>
+    <button onclick="create();">Create a Group</button>
+    <br>
+    <h2>Settings</h3>
+    <input type="checkbox" id="creatorControls">
+    <label for="creatorControls">Only group creator controls video</label>
     <script src="popup.js"></script>
 </body>
 </html>

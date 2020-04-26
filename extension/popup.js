@@ -2,11 +2,12 @@
 // Licensed under MIT.
 class DisneyPlusTogether {
     constructor(server="localhost", port=2626) {
-        // Initialize WebSocket
-        this._ws = new WebSocket(`ws://${server}:${port}`);
+        // Initialize WebSocket over TLS (Must be TLS-signed or it can't be connected to by an HTTPS site)
+        this._ws = new WebSocket(`wss://${server}:${port}`);
 
-        // Request session token
+        // When WebSocket opens
         this._ws.addEventListener("open", (event) => {
+            // Request a session
             this._ws.send("GET_SESSION");
         });
 
@@ -21,11 +22,15 @@ class DisneyPlusTogether {
             } else if(event.data.substring(0, 5) == "CGTK:") {
                 this._gtk = event.data.substring(5);
                 console.log("Created group: " + this._gtk);
+                // Create chat window
+                this._createWindow();
             
             // Message was a group join confirmation
             } else if(event.data.substring(0, 3) == "JG:") {
                 this._gtk = event.data.substring(3);
                 console.log("Joined group: " + this._gtk);
+                // Create chat window
+                this._createWindow();
 
             // Message was an error of some kind
             } else if(event.data.substring(0, 5) == "FAIL:") {
@@ -53,6 +58,46 @@ class DisneyPlusTogether {
         });
     }
 
+    _createWindow() {
+        // Create main window
+        let dpTogetherWindow = document.createElement("div");
+        // Set main window style
+        dpTogetherWindow.style.width = "20%";
+        dpTogetherWindow.style.height = "100%";
+        dpTogetherWindow.style.float = "right";
+        dpTogetherWindow.style.position = "relative";
+        dpTogetherWindow.style.padding = "5px";
+        dpTogetherWindow.style.backgroundColor = "#334";
+
+        // Create textarea for messages
+        let messageBox = document.createElement("textarea");
+        messageBox.rows = 4;
+        // Set message box style
+        messageBox.style.bottom = "5px";
+        messageBox.style.position = "absolute";
+        messageBox.style.width = "97%";
+        messageBox.autocapitalize = "off";
+        messageBox.autocomplete = "off";
+
+        // Add message box to window
+        dpTogetherWindow.appendChild(messageBox);
+
+        // Create button to send message
+        let sendButton = document.createElement("button");
+        // Set button style
+        sendButton.style.bottom = "5px";
+        sendButton.style.position = "absolute";
+        sendButton.style.width = "97%";
+        // Set button text
+        sendButton.innerText = "Send";
+
+        // Add button to window
+        dpTogetherWindow.appendChild(sendButton);
+        
+        // Add window to right of player
+        document.getElementById("hudson-wrapper").appendChild(dpTogetherWindow);
+    }
+
     createGroup() {
         // Request to create a group
         this._ws.send("CREATE_GROUP:" + this._stk);
@@ -73,10 +118,28 @@ class DisneyPlusTogether {
         this._ws.send(`PAUSE:${this._stk}:${this._gtk}`);
     }
 
+    setOptions(creatorControlOnly="OFF") {
+        // Change a created group's settings
+        // creatorControlOnly - Whether or not the group creator is the only one allowed to play/pause/move through video
+        this._ws.send(`SET:${creatorControlOnly}`);
+    }
+
     setVideoPosition(position) {
         // Set the current position in the video
         this._ws.send(`SET_POS:${this._stk}:${this._gtk}:${position}`);
     }
 };
 
-let dpt = new DisneyPlusTogether();
+var dpt;
+
+function setServer(serverElement) {
+    dpt = new DisneyPlusTogether(serverElement.value);
+}
+
+function create() {
+    dpt.createGroup();
+}
+
+function join(gtkElement) {
+    dpt.joinGroup(gtk.value);
+}
