@@ -12,8 +12,8 @@ ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
 ssl_context.load_cert_chain("certificate.crt", "key.key")
 # ssl_context.load_cert_chain("certificate.crt")
 
-# Bind sessions to websockets (token: websockets.WebSocketClientProtocol)
-sessions = {}
+# Bind websockets to display names
+connections = {}
 
 # Manage groups of websockets to send commands to (play, pause, etc.)
 groups = {}
@@ -24,30 +24,47 @@ preferences = {}
 # Main function
 async def main(websocket, path):
     async for message in websocket:
-        # Client requesting session token
-        if message[:11] == "GET_SESSION":
-            print(f"Session token request from {websocket.local_address}.")
-            while True:
-                # Generate a session token and see if it's not taken
-                tk = secrets.token_hex(12)
-                if tk not in sessions:
-                    sessions[tk] = websocket
-                    await websocket.send(f"STK:{tk}")
-                    print(f"Giving session token {tk} to {websocket.local_address}.")
-                    break
+        # # Client requesting session token
+        # if message[:11] == "GET_SESSION":
+        #     print(f"Session token request from {websocket.local_address}.")
+        #     while True:
+        #         # Generate a session token and see if it's not taken
+        #         tk = secrets.token_hex(12)
+        #         if tk not in sessions:
+        #             sessions[tk] = websocket
+        #             await websocket.send(f"STK:{tk}")
+        #             print(f"Giving session token {tk} to {websocket.local_address}.")
+        #             break
+
+        # Client requesting initialization
+        if message[:5] == "INIT:":
+            # Get parameters
+            try:
+                params = message.split(":")
+                params[1]
+            except IndexError:
+                # Client did not provide enough parameters to join group
+                await websocket.send("FAIL:IN_MISSING_PARAMETERS")
+            
+            print(f"Initialization from {websocket.local_address}.")
+            if websocket not in connections:
+                connections[websocket] = params[1]
+                await websocket.send("INIT:OK")
+            else:
+                await websocket.send("FAIL:IN_ALREADY_DONE")
         
         # Client requesting group creation
-        elif message[:13] == "CREATE_GROUP:":
-            print(f"Group creation request from {websocket.local_address} with session token {message[13:]}.")
+        elif message[:12] == "CREATE_GROUP":
+            print(f"Group creation request from {websocket.local_address}.")
             # Check if a valid session token was provided
-            if message[13:] in sessions:
-                # Valid session
-                print(f"Token {message[13:]} verified.")
+            if websocket in connections:
+                # Websocket initialized
+                print(f"{websocket.local_address} verified.")
 
                 # Check if client is already in a group
                 in_group = False
                 for group in groups:
-                    if sessions[message[13:]] in groups[group]:
+                    if websocket in groups[group]:
                         in_group = True
 
                 if not in_group:
@@ -56,45 +73,45 @@ async def main(websocket, path):
                         tk = secrets.token_hex(12)
                         if tk not in groups:
                             # Add group token to groups list and set the creator's group
-                            groups[tk] = [sessions[message[13:]]]
+                            groups[tk] = [websocket]
                             await websocket.send(f"CGTK:{tk}")
-                            print(f"Giving group token {tk} to {websocket.local_address} with session token {message[13:]}.")
+                            print(f"Giving group token {tk} to {websocket.local_address}.")
                             break
                 else:
                     # Client is already in a group
                     await websocket.send("FAIL:CG_IN_GROUP")
             else:
-                # Invalid session
+                # Invalid websocket
                 print(f"Invalid token {message[13:]}.")
-                await websocket.send("FAIL:CG_BAD_SESSION")
+                await websocket.send("FAIL:CG_NOT_INITIALIZED")
         
         # Client requesting to join group
         elif message[:11] == "JOIN_GROUP:":
             # Get parameters
             try:
                 params = message.split(":")
-                params[2]
+                params[1]
             except IndexError:
                 # Client did not provide enough parameters to join group
                 await websocket.send("FAIL:JG_MISSING_PARAMETERS")
             
             print(f"Group join request from {websocket.local_address} with session token {params[1]}.")
-            # Check if a valid session token was provided
-            if params[1] in sessions:
-                # Valid session
-                print(f"Token {params[1]} verified.")
+            # Check if an initialized websocket is being used
+            if websocket in connections:
+                # Websocket initialized
+                print(f"{websocket.local_address} verified.")
 
                 # Check if client is already in a group
                 in_group = False
                 for group in groups:
-                    if sessions[params[1]] in groups[group]:
+                    if websocket in groups[group]:
                         in_group = True
 
                 if not in_group:
                     # Try to add the client to the group
                     try:
-                        groups[params[2]].append(sessions[params[1]])
-                        await websocket.send("JG:" + params[2])
+                        groups[params[1]].append(websocket)
+                        await websocket.send("JG:" + params[1])
                     except KeyError:
                         # Client provided invalid group
                         await websocket.send("FAIL:JG_INVALID_GROUP")
@@ -105,30 +122,32 @@ async def main(websocket, path):
                     # Client is already in a group
                     await websocket.send("FAIL:JG_IN_GROUP")
             else:
-                # Invalid session
+                # Invalid websocket
                 print(f"Invalid token {message[13:43]}.")
-                await websocket.send("FAIL:JG_BAD_SESSION")
+                await websocket.send("FAIL:JG_NOT_INITIALIZED")
         
         # Client requesting to play/pause video
         elif message[:5] == "PLAY:" or message[:6] == "PAUSE:":
             # Get parameters
             try:
                 params = message.split(":")
-                params[2]
+                params[1]
             except IndexError:
                 # Client did not provide enough parameters to join group
                 await websocket.send("FAIL:PV_MISSING_PARAMETERS")
             
             # Check if client created the group (first member of the group)
             try:
-                if groups[params[2]][0] == websocket:
+                if groups[params[1]][0] == websocket:
                     # Send all group members the play instruction
                     if message[:4] == "PLAY":
-                        for ws in groups[params[2]]:
+                        for ws in groups[params[1]]:
                             await ws.send("PLAY")
+                            await ws.send(f"CHAT:{connections[websocket]} played the video: ")
                     else:
-                        for ws in groups[params[2]]:
+                        for ws in groups[params[1]]:
                             await ws.send("PAUSE")
+                            await ws.send(f"CHAT:{connections[websocket]} paused the video: ")
             except KeyError:
                 await websocket.send("FAIL:PV_INVALID_GROUP")
         
@@ -137,19 +156,43 @@ async def main(websocket, path):
             # Get parameters
             try:
                 params = message.split(":")
-                params[3]
+                params[2]
             except IndexError:
                 # Client did not provide enough parameters to join group
                 await websocket.send("FAIL:SP_MISSING_PARAMETERS")
             
             # Check if client created the group (first member of the group)
             try:
-                if groups[params[2]][0] == websocket:
-                    # Send all group members the set instruction
-                    for ws in groups[params[2]]:
-                        await ws.send(f"POS:{params[3]}")
+                if groups[params[1]][0] == websocket:
+                    # Send all group members the new video position
+                    for ws in groups[params[1]]:
+                        await ws.send(f"POS:{params[2]}")
+                        await ws.send(f"CHAT:{connections[websocket]} set the video time to {params[2]} seconds: ")
+                else:
+                    await websocket.send("FAIL:SP_NOT_GROUP_CREATOR")
             except KeyError:
                 await websocket.send("FAIL:SP_INVALID_GROUP")
+        
+        # Client sending message
+        elif message[:5] == "CHAT:":
+            # Get parameters
+            try:
+                params = message.split(":")
+                params[2]
+            except IndexError:
+                # Client did not provide enough parameters to join group
+                await websocket.send("FAIL:CT_MISSING_PARAMETERS")
+            
+            # Check if client is in the group
+            try:
+                if websocket in groups[params[1]]:
+                    # Send all group members the message
+                    for ws in groups[params[1]]:
+                        await ws.send(f"CHAT:{connections[websocket]}:{params[2]}")
+                else:
+                    await websocket.send("FAIL:CT_NOT_IN_GROUP")
+            except KeyError:
+                await websocket.send("FAIL:CT_INVALID_GROUP")
 
 # Run WebSocket
 asyncio.get_event_loop().run_until_complete(
