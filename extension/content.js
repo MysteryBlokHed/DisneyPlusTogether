@@ -91,13 +91,22 @@ class DisneyPlusTogether {
         this._dpTogetherWindow.style.padding = "5px";
         this._dpTogetherWindow.style.backgroundColor = "#334";
 
+        // Put group token at top
+        let gtk = document.createElement("h3");
+        gtk.innerHTML = "Code:<br>" + this._gtk;
+        gtk.style.textAlign = "center";
+        gtk.style.color = "white";
+
+        // Add token to window
+        this._dpTogetherWindow.appendChild(gtk);
+
         // Create div to hold messages
         let messageArea = document.createElement("div");
         // Set message area style
         messageArea.style.margin = "4px";
         messageArea.style.overflowX = "hidden";
         messageArea.style.overflowY = "auto";
-        messageArea.style.height = "90%";
+        messageArea.style.height = "82%";
         messageArea.style.color = "white";
         messageArea.style.display = "flex";
         messageArea.style.flexDirection = "column-reverse";
@@ -167,14 +176,14 @@ class DisneyPlusTogether {
 
             try {
                 // Add message to window
-                this._dpTogetherWindow.children[0].insertBefore(msg, this._dpTogetherWindow.children[0].firstChild);
+                this._dpTogetherWindow.children[1].insertBefore(msg, this._dpTogetherWindow.children[1].firstChild);
                 // Add line break for next message
-                this._dpTogetherWindow.children[0].insertBefore(document.createElement("br"), this._dpTogetherWindow.children[0].firstChild);
+                this._dpTogetherWindow.children[1].insertBefore(document.createElement("br"), this._dpTogetherWindow.children[1].firstChild);
             } catch {
                 // Add message to window
-                this._dpTogetherWindow.children[0].appendChild(msg);
+                this._dpTogetherWindow.children[1].appendChild(msg);
                 // Add line break for next message
-                this._dpTogetherWindow.children[0].insertBefore(document.createElement("br"), this._dpTogetherWindow.children[0].firstChild);
+                this._dpTogetherWindow.children[1].insertBefore(document.createElement("br"), this._dpTogetherWindow.children[1].firstChild);
             }
         }
     }
@@ -217,6 +226,27 @@ class DisneyPlusTogether {
 };
 
 var dpt;
+var lastTime = 0;
+
+function initializeVidListeners() {
+    // Set up video event listeners (play, pause, time)
+    document.getElementsByTagName("video")[0].onplay = () => {
+        dpt.playVideo();
+    }
+    document.getElementsByTagName("video")[0].onpause = () => {
+        dpt.pauseVideo();
+        dpt.setVideoPosition(document.getElementsByTagName("video")[0].currentTime);
+    }
+    document.getElementsByTagName("video")[0].ontimeupdate = () => {
+        // Check if video time has changed significantly
+        if(document.getElementsByTagName("video")[0].currentTime - lastTime >= -1 && document.getElementsByTagName("video")[0].currentTime - lastTime <= 1) {
+            lastTime = document.getElementsByTagName("video")[0].currentTime;
+        } else {
+            dpt.setVideoPosition(document.getElementsByTagName("video")[0].currentTime);
+            lastTime = document.getElementsByTagName("video")[0].currentTime;
+        }
+    }
+}
 
 // Handle requests from the extension
 chrome.runtime.onMessage.addListener(
@@ -230,6 +260,7 @@ chrome.runtime.onMessage.addListener(
             }
             dpt.ongroupcreate = () => {
                 chrome.runtime.sendMessage({result: "CODE", code: dpt._gtk}, function(response) {});
+                initializeVidListeners();
             };
             sendResponse({result: "PROCESSING"});
         
@@ -242,6 +273,7 @@ chrome.runtime.onMessage.addListener(
             };
             dpt.ongroupjoin = () => {
                 chrome.runtime.sendMessage({result: "CODE", code: dpt._gtk}, function(response) {});
+                initializeVidListeners();
             };
             sendResponse({result: "PROCESSING"});
         } else {
