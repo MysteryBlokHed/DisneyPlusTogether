@@ -6,9 +6,15 @@
     "icons": {
         "128": "icon_128.png"
     },
+
     "browser_action": {
         "default_icon": "icon.png",
+        "default_title": "Disney Plus Together",
         "default_popup": "popup.html"
     },
-    "permissions": ["activeTab"]
+    
+    "content_scripts": [{
+            "matches": ["https://*.disneyplus.com/video/*"],
+            "js": ["content.js"]
+    }]
 }

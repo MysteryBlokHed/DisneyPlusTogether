@@ -1,220 +1,39 @@
-// Created by Adam Thompson-Sharpe on 19/04/2020.
-// Licensed under MIT.
-class DisneyPlusTogether {
-    constructor(displayName, server="localhost", port=2626) {
-        // Initialize WebSocket over TLS (Must be TLS-signed or it can't be connected to by an HTTPS site)
-        this._ws = new WebSocket(`wss://${server}:${port}`);
+// Created by Adam Thompson-Sharpe on 26/04/2020.
+var nameElement = document.getElementById("name");
+var server = document.getElementById("server");
+var groupJoinId = document.getElementById("groupJoinId");
 
-        // When WebSocket opens
-        this._ws.addEventListener("open", (event) => {
-            // Request initialization with display name
-            this._ws.send(`INIT:${displayName}`);
-        });
-
-        // Handle received messages
-        this._ws.addEventListener("message", (event) => {
-            // // Message was a session token
-            // if(event.data.substring(0, 4) == "STK:") {
-            //     this._stk = event.data.substring(4);
-            //     console.log("Received token: " + this._stk);
-
-            // Message was an initialization confirmation
-            if(event.data.substring(0, 7) == "INIT:OK") {
-                console.log("Initialized.");
-
-            // Message was a group token for a created group
-            } else if(event.data.substring(0, 5) == "CGTK:") {
-                this._gtk = event.data.substring(5);
-                console.log("Created group: " + this._gtk);
-                // Create chat window
-                this._createWindow();
-            
-            // Message was a chat message
-            } else if(event.data.substring(0, 5) == "CHAT:") {
-                console.log("Received chat message.");
-                let params = event.data.split(":");
-                // Add message to chat window
-                this._addMessage(params[1], params[2]);
-            
-            // Message was a group join confirmation
-            } else if(event.data.substring(0, 3) == "JG:") {
-                this._gtk = event.data.substring(3);
-                console.log("Joined group: " + this._gtk);
-                // Create chat window
-                this._createWindow();
-
-            // Message was an error of some kind
-            } else if(event.data.substring(0, 5) == "FAIL:") {
-                console.error(event.data.substring(5));
-            
-            // Message was to play the video
-            } else if(event.data.substring(0, 4) == "PLAY") {
-                console.log("Playing video...");
-                document.getElementsByTagName("video")[0].play();
-            
-            // Message was to pause the video
-            } else if(event.data.substring(0, 5) == "PAUSE") {
-                console.log("Pausing video...");
-                document.getElementsByTagName("video")[0].pause();
-            
-            // Message was a new video position
-            } else if(event.data.substring(0, 4) == "POS:") {
-                console.log("Setting video time to " + event.data.substring(4));
-                document.getElementsByTagName("video")[0].currentTime = parseFloat(event.data.substring(4));
-            
-            // Unknown message
-            } else {
-                console.log("Unknown message: " + event.data);
-            }
-        });
-    }
-
-    _createWindow() {
-        // Create main window
-        this._dpTogetherWindow = document.createElement("div");
-        // Set main window style
-        this._dpTogetherWindow.style.width = "20%";
-        this._dpTogetherWindow.style.height = "100%";
-        this._dpTogetherWindow.style.float = "right";
-        this._dpTogetherWindow.style.position = "relative";
-        this._dpTogetherWindow.style.padding = "5px";
-        this._dpTogetherWindow.style.backgroundColor = "#334";
-
-        // Create div to hold messages
-        let messageArea = document.createElement("div");
-        // Set message area style
-        messageArea.style.margin = "4px";
-        messageArea.style.overflowX = "hidden";
-        messageArea.style.overflowY = "auto";
-        messageArea.style.height = "90%";
-        messageArea.style.color = "white";
-        messageArea.style.display = "flex";
-        messageArea.style.flexDirection = "column-reverse";
-
-        // Add message area to window
-        this._dpTogetherWindow.appendChild(messageArea);
-
-        // Create textarea for messages
-        let messageBox = document.createElement("textarea");
-        messageBox.rows = 4;
-        // Set message box style
-        messageBox.style.bottom = "5px";
-        messageBox.style.position = "absolute";
-        messageBox.style.width = "97%";
-        messageBox.autocapitalize = "off";
-        messageBox.autocomplete = "off";
-        // Add eventlistener to send message
-        messageBox.onkeyup = (event) => {
-            if(event.key === "Enter") {
-                this.sendMessage(messageBox.value);
-                messageBox.value = "";
-            }
-        };
-
-        // Add message box to window
-        this._dpTogetherWindow.appendChild(messageBox);
-
-        // Create button to send message
-        let sendButton = document.createElement("button");
-        // Set button style
-        sendButton.style.bottom = "5px";
-        sendButton.style.position = "absolute";
-        sendButton.style.width = "97%";
-        // Set button text
-        sendButton.innerText = "Send";
-        // Add eventlistener to send message
-        sendButton.onclick = (event) => {
-            this.sendMessage(messageBox.value);
-            messageBox.value = "";
-        }
-
-        // Add button to window
-        this._dpTogetherWindow.appendChild(sendButton);
-        
-        // Add window to right of player
-        document.getElementById("hudson-wrapper").appendChild(this._dpTogetherWindow);
-    }
-
-    _addMessage(senderName, message) {
-        // Adds a message to the main window
-        if(this._dpTogetherWindow !== undefined) {
-            // Create message div
-            let msg = document.createElement("div");
-
-            // Create name on message
-            let name = document.createElement("b");
-            name.innerText = senderName;
-
-            // Add message content
-            let content = document.createElement("span");
-            content.innerText = message;
-
-            // Add name & content to message
-            msg.appendChild(name);
-            msg.appendChild(document.createElement("br"));
-            msg.appendChild(content);
-
-            try {
-                // Add message to window
-                this._dpTogetherWindow.children[0].insertBefore(msg, this._dpTogetherWindow.children[0].firstChild);
-                // Add line break for next message
-                this._dpTogetherWindow.children[0].insertBefore(document.createElement("br"), this._dpTogetherWindow.children[0].firstChild);
-            } catch {
-                // Add message to window
-                this._dpTogetherWindow.children[0].appendChild(msg);
-                // Add line break for next message
-                this._dpTogetherWindow.children[0].insertBefore(document.createElement("br"), this._dpTogetherWindow.children[0].firstChild);
-            }
-        }
-    }
-
-    createGroup() {
-        // Request to create a group
-        this._ws.send("CREATE_GROUP");
-    }
-
-    joinGroup(gtk) {
-        // Request to join group
-        this._ws.send(`JOIN_GROUP:${gtk}`);
-    }
-
-    playVideo() {
-        // Play the video
-        this._ws.send(`PLAY:${this._gtk}`);
-    }
-
-    pauseVideo() {
-        // Pause the video
-        this._ws.send(`PAUSE:${this._gtk}`);
-    }
-
-    setOptions(creatorControlOnly="OFF") {
-        // Change a created group's settings
-        // creatorControlOnly - Whether or not the group creator is the only one allowed to play/pause/move through video
-        this._ws.send(`SET:${creatorControlOnly}`);
-    }
-
-    setVideoPosition(position) {
-        // Set the current position in the video
-        this._ws.send(`SET_POS:${this._gtk}:${position}`);
-    }
-
-    sendMessage(message) {
-        // Send a message to the group members
-        this._ws.send(`CHAT:${this._gtk}:${message}`);
-    }
+// Set button click actions
+document.getElementById("createButton").onclick = function() {
+    console.log(nameElement);
+    // Initialize and create a group
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+            command: "CREATE",
+            name: nameElement.value,
+            server: server.value
+        }, function(response) {});
+    });
 };
 
-var dpt;
+document.getElementById("joinButton").onclick = function() {
+    // Initialize and join a group
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+            command: "JOIN",
+            name: nameElement.value,
+            server: server.value,
+            group: groupJoinId.value
+        }, function(response) {});
+    });
+};
 
-function setServer(displayName, serverElement) {
-    dpt = new DisneyPlusTogether(displayName, serverElement.value);
-}
-
-function create() {
-    dpt.createGroup();
-}
-
-function join(gtkElement) {
-    dpt.joinGroup(gtk.value);
-}
+// Get responses from content script
+chrome.runtime.onMessage.addListener(
+    function(request, sender, sendResponse) {
+        // Group code
+        if(request.result == "CODE") {
+            document.getElementById("content").innerHTML = `<h1>Group Code: ${request.code}</h1>`;
+        }
+        sendResponse({o: "k"});
+    });

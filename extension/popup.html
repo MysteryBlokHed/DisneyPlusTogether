@@ -26,18 +26,22 @@
 <body>
     <img width="150" height="150" src="images/icon_large.png" alt="Disney Plus Together">
     <h1>Disney Plus Together</h1>
-    <label for="server">Server:</label>
-    <input type="text" id="server" placeholder="127.0.0.1">
-    <button onclick="setServer(document.getElementById('server'));">Set Server</button>
-    <br>
-    <input type="text" id="groupJoinId" placeholder="Group ID...">
-    <button onclick="join(document.getElementById('groupJoinId'));">Join a Group</button>
-    <br>
-    <button onclick="create();">Create a Group</button>
-    <br>
-    <h2>Settings</h3>
-    <input type="checkbox" id="creatorControls">
-    <label for="creatorControls">Only group creator controls video</label>
+    <div id="content">
+        <label for="name">Name:</label>
+        <input type="text" id="name" placeholder="DPT User">
+        <br>
+        <label for="server">Server:</label>
+        <input type="text" id="server" placeholder="127.0.0.1">
+        <hr>
+        <input type="text" id="groupJoinId" placeholder="Group ID...">
+        <button id="joinButton">Join a Group</button>
+        <hr>
+        <button id="createButton">Create a Group</button>
+        <hr>
+        <h2>Settings</h3>
+        <input type="checkbox" id="creatorControls">
+        <label for="creatorControls">Only group creator controls video</label>
+    </div>
     <script src="popup.js"></script>
 </body>
 </html>
