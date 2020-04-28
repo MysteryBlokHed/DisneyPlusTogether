@@ -142,12 +142,20 @@ async def main(websocket, path):
                     # Send all group members the play instruction
                     if message[:4] == "PLAY":
                         for ws in groups[params[1]]:
-                            await ws.send("PLAY")
-                            await ws.send(f"CHAT:{connections[websocket]} played the video: ")
+                            try:
+                                await ws.send("PLAY")
+                                await ws.send(f"CHAT:{connections[websocket]} played the video: ")
+                            except:
+                                print(f"{ws.local_address} is no longer present.")
+                                groups[params[1]].remove(ws)
                     else:
                         for ws in groups[params[1]]:
-                            await ws.send("PAUSE")
-                            await ws.send(f"CHAT:{connections[websocket]} paused the video: ")
+                            try:
+                                await ws.send("PAUSE")
+                                await ws.send(f"CHAT:{connections[websocket]} paused the video: ")
+                            except:
+                                print(f"{ws.local_address} is no longer present.")
+                                groups[params[1]].remove(ws)
             except KeyError:
                 await websocket.send("FAIL:PV_INVALID_GROUP")
         
@@ -166,8 +174,12 @@ async def main(websocket, path):
                 if groups[params[1]][0] == websocket:
                     # Send all group members the new video position
                     for ws in groups[params[1]]:
-                        await ws.send(f"POS:{params[2]}")
-                        await ws.send(f"CHAT:{connections[websocket]} set the video time to {params[2]} seconds: ")
+                        try:
+                            await ws.send(f"POS:{params[2]}")
+                            await ws.send(f"CHAT:{connections[websocket]} set the video time to {params[2]} seconds: ")
+                        except:
+                            print(f"{ws.local_address} is no longer present.")
+                            groups[params[1]].remove(ws)
                 else:
                     await websocket.send("FAIL:SP_NOT_GROUP_CREATOR")
             except KeyError:
@@ -188,7 +200,11 @@ async def main(websocket, path):
                 if websocket in groups[params[1]]:
                     # Send all group members the message
                     for ws in groups[params[1]]:
-                        await ws.send(f"CHAT:{connections[websocket]}:{params[2]}")
+                        try:
+                            await ws.send(f"CHAT:{connections[websocket]}:{params[2]}")
+                        except:
+                            print(f"{ws.local_address} is no longer present.")
+                            groups[params[1]].remove(ws)
                 else:
                     await websocket.send("FAIL:CT_NOT_IN_GROUP")
             except KeyError:
@@ -196,6 +212,6 @@ async def main(websocket, path):
 
 # Run WebSocket
 asyncio.get_event_loop().run_until_complete(
-    # websockets.serve(main, "0.0.0.0", PORT))
-    websockets.serve(main, "0.0.0.0", PORT, ssl=ssl_context))
+    websockets.serve(main, "0.0.0.0", PORT))
+    # websockets.serve(main, "0.0.0.0", PORT, ssl=ssl_context))
 asyncio.get_event_loop().run_forever()
