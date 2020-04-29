@@ -3,7 +3,7 @@
 class DisneyPlusTogether {
     constructor(displayName, server="localhost", port=2626) {
         // Initialize WebSocket over TLS (Must be TLS-signed or it can't be connected to by an HTTPS site)
-        this._ws = new WebSocket(`ws://${server}:${port}`);
+        this._ws = new WebSocket(`wss://${server}:${port}`);
 
         // Functions to run on certain events
         this.onconnect = function() {}
