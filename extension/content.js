@@ -188,9 +188,9 @@ class DisneyPlusTogether {
         }
     }
 
-    createGroup() {
+    createGroup(ownerControls) {
         // Request to create a group
-        this._ws.send("CREATE_GROUP");
+        this._ws.send(`CREATE_GROUP:${ownerControls}`);
     }
 
     joinGroup(gtk) {
@@ -256,7 +256,7 @@ chrome.runtime.onMessage.addListener(
             dpt = new DisneyPlusTogether(request.name, request.server);
             // On DPT group create tell the extension group is ready
             dpt.onconnect = () => {
-                dpt.createGroup();
+                dpt.createGroup(request.ownerControls);
             }
             dpt.ongroupcreate = () => {
                 chrome.runtime.sendMessage({result: "CODE", code: dpt._gtk}, function(response) {});

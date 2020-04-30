@@ -2,6 +2,12 @@
 var nameElement = document.getElementById("name");
 var server = document.getElementById("server");
 var groupJoinId = document.getElementById("groupJoinId");
+var ownerControls = document.getElementById("ownerControls");
+
+function getCheckStatus(checkboxElement) {
+    if(checkboxElement.checked) return "ON";
+    else return "OFF";
+}
 
 // Set button click actions
 document.getElementById("createButton").onclick = function() {
@@ -11,7 +17,8 @@ document.getElementById("createButton").onclick = function() {
         chrome.tabs.sendMessage(tabs[0].id, {
             command: "CREATE",
             name: nameElement.value,
-            server: server.value
+            server: server.value,
+            ownerControls: getCheckStatus(ownerControls)
         }, function(response) {});
     });
 };

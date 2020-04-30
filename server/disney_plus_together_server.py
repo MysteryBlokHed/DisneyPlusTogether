@@ -43,7 +43,7 @@ async def main(websocket, path):
                 params = message.split(":")
                 params[1]
             except IndexError:
-                # Client did not provide enough parameters to join group
+                # Client did not provide enough parameters
                 await websocket.send("FAIL:IN_MISSING_PARAMETERS")
             
             print(f"Initialization from {websocket.local_address}.")
@@ -54,9 +54,17 @@ async def main(websocket, path):
                 await websocket.send("FAIL:IN_ALREADY_DONE")
         
         # Client requesting group creation
-        elif message[:12] == "CREATE_GROUP":
+        elif message[:13] == "CREATE_GROUP:":
             print(f"Group creation request from {websocket.local_address}.")
-            # Check if a valid session token was provided
+            # Get parameters
+            try:
+                params = message.split(":")
+                params[1]
+            except IndexError:
+                # Client did not provide enough parameters to create group
+                await websocket.send("FAIL:CG_MISSING_PARAMETERS")
+            
+            # Check if the client has initialized
             if websocket in connections:
                 # Websocket initialized
                 print(f"{websocket.local_address} verified.")
@@ -76,6 +84,9 @@ async def main(websocket, path):
                             groups[tk] = [websocket]
                             await websocket.send(f"CGTK:{tk}")
                             print(f"Giving group token {tk} to {websocket.local_address}.")
+                            # Set group preferences
+                            preferences[tk] = {}
+                            preferences[tk]["owner_controls"] = params[1]
                             break
                 else:
                     # Client is already in a group
@@ -135,10 +146,10 @@ async def main(websocket, path):
             except IndexError:
                 # Client did not provide enough parameters to join group
                 await websocket.send("FAIL:PV_MISSING_PARAMETERS")
-            
-            # Check if client created the group (first member of the group)
+
+            # Check if client created the group (first member of the group) or the group allows anyone to control
             try:
-                if groups[params[1]][0] == websocket:
+                if groups[params[1]][0] == websocket or (preferences[params[1]]["owner_controls"] == "OFF" and websocket in groups[params[1]]):
                     # Send all group members the play instruction
                     if message[:4] == "PLAY":
                         for ws in groups[params[1]]:
@@ -169,9 +180,9 @@ async def main(websocket, path):
                 # Client did not provide enough parameters to join group
                 await websocket.send("FAIL:SP_MISSING_PARAMETERS")
             
-            # Check if client created the group (first member of the group)
+            # Check if client created the group (first member of the group) or the group allows anyone to control
             try:
-                if groups[params[1]][0] == websocket:
+                if groups[params[1]][0] == websocket or (preferences[params[1]]["owner_controls"] == "OFF" and websocket in groups[params[1]]):
                     # Send all group members the new video position
                     for ws in groups[params[1]]:
                         try:
