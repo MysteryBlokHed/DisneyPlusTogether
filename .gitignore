@@ -2,4 +2,6 @@
 account-key.txt
 domain-csr.txt
 certificate.crt
-key.key
+key.pem
+extension.crx
+extension.pem
