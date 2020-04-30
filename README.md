@@ -20,10 +20,14 @@ The Chromium extension is inside the `/extension` folder in the repository.
 1. Go to the extensions page (`chrome://extensions` or `edge://extensions`)
 2. Enable developer mode (top-right for Chrome, bottom-left for Edge)
 3. Select "load unpacked" from the new menu at the top.
-4. To be continued
+
+Now you should see the extension in area to the right of your URL bar. Left-click it when on any Disney Plus video to activate it.
 
 ## Running the server
 The server code is inside the `/server` folder in the repository. Instructions will be written relative to there.
 
+**IMPORTANT: If you want to use this with others (which is likely), you will need a server on a different network as well as a TLS certificate.** I recommend [ZeroSSL](http://zerossl.com/) to create the certificate, since it's free, uses [Let's Encrypt](https://letsencrypt.org/), is cross-platform (only important for certificate creation), and is trusted by most browsers I've seen. Using a self-signed certificate is not trusted by any browser unless you manually add it.
+
 1. Install the requirements by running `python` or `python3 -m pip install -r requirements.txt`.
-2. Run `disney_plus_together_server.py`.
+2. Name your TLS certificate `certificate.crt` and your private key `key.pem`, and place them in the same directory as the server. These files are already in the `.gitignore`.
+3. Run the server using `python` or `python3 disney_plus_together_server.py`.
