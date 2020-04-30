@@ -3,5 +3,8 @@ account-key.txt
 domain-csr.txt
 certificate.crt
 key.pem
+# Extension-related
 extension.crx
 extension.pem
+# Server-related
+sshkey.pem
