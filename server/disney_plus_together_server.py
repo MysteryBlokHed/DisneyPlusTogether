@@ -9,7 +9,7 @@ PORT = 2626
 
 # Used for SSL
 ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-ssl_context.load_cert_chain("certificate.crt", "key.key")
+ssl_context.load_cert_chain("certificate.crt", "key.pem")
 # ssl_context.load_cert_chain("certificate.crt")
 
 # Bind websockets to display names
@@ -212,6 +212,6 @@ async def main(websocket, path):
 
 # Run WebSocket
 asyncio.get_event_loop().run_until_complete(
-    websockets.serve(main, "0.0.0.0", PORT))
-    # websockets.serve(main, "0.0.0.0", PORT, ssl=ssl_context))
+    # websockets.serve(main, "0.0.0.0", PORT))
+    websockets.serve(main, "0.0.0.0", PORT, ssl=ssl_context))
 asyncio.get_event_loop().run_forever()
