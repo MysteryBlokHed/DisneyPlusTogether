@@ -10,6 +10,15 @@ class DisneyPlusTogether {
         this.ongroupcreate = function() {}
         this.ongroupjoin = function() {}
 
+        // Avoid essentially DOSing the server with play/pauses by tracking if updates were done by user or in the backend
+        this._justPlayed = false;
+        this._justPaused = false;
+        this._justSet = false;
+
+        this.played = false;
+        this.paused = false;
+        this.set = false;
+
         // When WebSocket opens
         this._ws.addEventListener("open", (event) => {
             // Request initialization with display name
@@ -44,6 +53,13 @@ class DisneyPlusTogether {
                 let params = event.data.split(":");
                 // Add message to chat window
                 this._addMessage(params[1], params[2]);
+
+            // Message was an update (eg. play/pause)
+            } else if(event.data.substring(0, 5) == "NOTE:") {
+                console.log("Received status update.");
+                let params = event.data.split(":");
+                // Add to window
+                this._addMessage(params[1], "", "gray");
             
             // Message was a group join confirmation
             } else if(event.data.substring(0, 3) == "JG:") {
@@ -62,16 +78,19 @@ class DisneyPlusTogether {
             } else if(event.data.substring(0, 4) == "PLAY") {
                 console.log("Playing video...");
                 document.getElementsByTagName("video")[0].play();
+                this._justPlayed = true;
             
             // Message was to pause the video
             } else if(event.data.substring(0, 5) == "PAUSE") {
                 console.log("Pausing video...");
                 document.getElementsByTagName("video")[0].pause();
+                this._justPaused = true;
             
             // Message was a new video position
             } else if(event.data.substring(0, 4) == "POS:") {
                 console.log("Setting video time to " + event.data.substring(4));
                 document.getElementsByTagName("video")[0].currentTime = parseFloat(event.data.substring(4));
+                this._justSet = true;
             
             // Unknown message
             } else {
@@ -155,7 +174,7 @@ class DisneyPlusTogether {
         document.getElementById("hudson-wrapper").appendChild(this._dpTogetherWindow);
     }
 
-    _addMessage(senderName, message) {
+    _addMessage(senderName, message, color=undefined) {
         // Adds a message to the main window
         if(this._dpTogetherWindow !== undefined) {
             // Create message div
@@ -168,6 +187,10 @@ class DisneyPlusTogether {
             // Add message content
             let content = document.createElement("span");
             content.innerText = message;
+
+            // Set color if specified
+            if(color !== undefined)
+                msg.style.color = color;
 
             // Add name & content to message
             msg.appendChild(name);
@@ -199,13 +222,25 @@ class DisneyPlusTogether {
     }
 
     playVideo() {
-        // Play the video
-        this._ws.send(`PLAY:${this._gtk}`);
+        // Check if video has just been played
+        if(!this._justPlayed || this.played) {
+            // Play the video
+            this._ws.send(`PLAY:${this._gtk}`);
+        } else {
+            this._justPlayed = false;
+            this.played = false;
+        }
     }
 
     pauseVideo() {
-        // Pause the video
-        this._ws.send(`PAUSE:${this._gtk}`);
+        // Check if video has just been paused
+        if(!this._justPaused) {
+            // Pause the video
+            this._ws.send(`PAUSE:${this._gtk}`);
+        } else {
+            this._justPaused = false;
+            this.paused = false;
+        }
     }
 
     setOptions(creatorControlOnly="OFF") {
@@ -215,8 +250,14 @@ class DisneyPlusTogether {
     }
 
     setVideoPosition(position) {
-        // Set the current position in the video
-        this._ws.send(`SET_POS:${this._gtk}:${position}`);
+        // Check if video time has just been changed
+        if(!this._justSet) {
+            // Set the current position in the video
+            this._ws.send(`SET_POS:${this._gtk}:${position}`);
+        } else {
+            this._justSet = false;
+            this.set = false;
+        }
     }
 
     sendMessage(message) {
@@ -232,10 +273,13 @@ function initializeVidListeners() {
     // Set up video event listeners (play, pause, time)
     document.getElementsByTagName("video")[0].onplay = () => {
         dpt.playVideo();
+        dpt.played = true;
     }
     document.getElementsByTagName("video")[0].onpause = () => {
         dpt.pauseVideo();
         dpt.setVideoPosition(document.getElementsByTagName("video")[0].currentTime);
+        dpt.paused = true;
+        dpt.set = true;
     }
     document.getElementsByTagName("video")[0].ontimeupdate = () => {
         // Check if video time has changed significantly
@@ -244,6 +288,7 @@ function initializeVidListeners() {
         } else {
             dpt.setVideoPosition(document.getElementsByTagName("video")[0].currentTime);
             lastTime = document.getElementsByTagName("video")[0].currentTime;
+            dpt.set = true;
         }
     }
 }

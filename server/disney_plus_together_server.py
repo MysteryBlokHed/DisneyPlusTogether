@@ -18,6 +18,9 @@ connections = {}
 # Manage groups of websockets to send commands to (play, pause, etc.)
 groups = {}
 
+# Manage video state for groups (played/paused, position)
+groups_info = {}
+
 # Manage preferences set by the group creator
 preferences = {}
 
@@ -87,6 +90,8 @@ async def main(websocket, path):
                             # Set group preferences
                             preferences[tk] = {}
                             preferences[tk]["owner_controls"] = params[1]
+                            # Set group video state
+                            groups_info[tk] = {"playing": "yes", "position": ""}
                             break
                 else:
                     # Client is already in a group
@@ -150,20 +155,25 @@ async def main(websocket, path):
             # Check if client created the group (first member of the group) or the group allows anyone to control
             try:
                 if groups[params[1]][0] == websocket or (preferences[params[1]]["owner_controls"] == "OFF" and websocket in groups[params[1]]):
-                    # Send all group members the play instruction
                     if message[:4] == "PLAY":
                         for ws in groups[params[1]]:
                             try:
+                                # Send all group members the play instruction
                                 await ws.send("PLAY")
-                                await ws.send(f"CHAT:{connections[websocket]} played the video: ")
+                                await ws.send(f"NOTE:{connections[websocket]} played the video")
+                                # Update group video info
+                                groups_info[params[1]]["playing"] = "yes"
                             except:
                                 print(f"{ws.local_address} is no longer present.")
                                 groups[params[1]].remove(ws)
                     else:
                         for ws in groups[params[1]]:
                             try:
+                                # Send all group members the pause instruction
                                 await ws.send("PAUSE")
-                                await ws.send(f"CHAT:{connections[websocket]} paused the video: ")
+                                await ws.send(f"NOTE:{connections[websocket]} paused the video")
+                                # Update group video info
+                                groups_info[params[1]]["playing"] = "no"
                             except:
                                 print(f"{ws.local_address} is no longer present.")
                                 groups[params[1]].remove(ws)
@@ -183,11 +193,13 @@ async def main(websocket, path):
             # Check if client created the group (first member of the group) or the group allows anyone to control
             try:
                 if groups[params[1]][0] == websocket or (preferences[params[1]]["owner_controls"] == "OFF" and websocket in groups[params[1]]):
-                    # Send all group members the new video position
                     for ws in groups[params[1]]:
                         try:
+                            # Send all group members the new video position
                             await ws.send(f"POS:{params[2]}")
-                            await ws.send(f"CHAT:{connections[websocket]} set the video time to {params[2]} seconds: ")
+                            await ws.send(f"NOTE:{connections[websocket]} set the video time to {params[2]} seconds")
+                            # Update group video info
+                            groups_info[params[1]]["position"] = params[2]
                         except:
                             print(f"{ws.local_address} is no longer present.")
                             groups[params[1]].remove(ws)
