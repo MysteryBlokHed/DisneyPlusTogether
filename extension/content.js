@@ -11,13 +11,9 @@ class DisneyPlusTogether {
         this.ongroupjoin = function() {}
 
         // Avoid essentially DOSing the server with play/pauses by tracking if updates were done by user or in the backend
-        this._justPlayed = false;
-        this._justPaused = false;
-        this._justSet = false;
-
-        this.played = false;
-        this.paused = false;
-        this.set = false;
+        this.justPlayed = false;
+        this.justPaused = false;
+        this.justSet = false;
 
         // When WebSocket opens
         this._ws.addEventListener("open", (event) => {
@@ -76,21 +72,21 @@ class DisneyPlusTogether {
             
             // Message was to play the video
             } else if(event.data.substring(0, 4) == "PLAY") {
+                this.justPlayed = true;
                 console.log("Playing video...");
                 document.getElementsByTagName("video")[0].play();
-                this._justPlayed = true;
             
             // Message was to pause the video
             } else if(event.data.substring(0, 5) == "PAUSE") {
+                this.justPaused = true;
                 console.log("Pausing video...");
                 document.getElementsByTagName("video")[0].pause();
-                this._justPaused = true;
             
             // Message was a new video position
             } else if(event.data.substring(0, 4) == "POS:") {
+                this.justSet = true;
                 console.log("Setting video time to " + event.data.substring(4));
                 document.getElementsByTagName("video")[0].currentTime = parseFloat(event.data.substring(4));
-                this._justSet = true;
             
             // Unknown message
             } else {
@@ -222,42 +218,15 @@ class DisneyPlusTogether {
     }
 
     playVideo() {
-        // Check if video has just been played
-        if(!this._justPlayed || this.played) {
-            // Play the video
-            this._ws.send(`PLAY:${this._gtk}`);
-        } else {
-            this._justPlayed = false;
-            this.played = false;
-        }
+        this._ws.send(`PLAY:${this._gtk}`);
     }
 
     pauseVideo() {
-        // Check if video has just been paused
-        if(!this._justPaused) {
-            // Pause the video
-            this._ws.send(`PAUSE:${this._gtk}`);
-        } else {
-            this._justPaused = false;
-            this.paused = false;
-        }
-    }
-
-    setOptions(creatorControlOnly="OFF") {
-        // Change a created group's settings
-        // creatorControlOnly - Whether or not the group creator is the only one allowed to play/pause/move through video
-        this._ws.send(`SET:${creatorControlOnly}`);
+        this._ws.send(`PAUSE:${this._gtk}`);
     }
 
     setVideoPosition(position) {
-        // Check if video time has just been changed
-        if(!this._justSet) {
-            // Set the current position in the video
-            this._ws.send(`SET_POS:${this._gtk}:${position}`);
-        } else {
-            this._justSet = false;
-            this.set = false;
-        }
+        this._ws.send(`SET_POS:${this._gtk}:${position}`);
     }
 
     sendMessage(message) {
@@ -272,23 +241,26 @@ var lastTime = 0;
 function initializeVidListeners() {
     // Set up video event listeners (play, pause, time)
     document.getElementsByTagName("video")[0].onplay = () => {
-        dpt.playVideo();
-        dpt.played = true;
+        if(!dpt.justPlayed)
+            dpt.playVideo();
+        dpt.justPlayed = false;
     }
     document.getElementsByTagName("video")[0].onpause = () => {
-        dpt.pauseVideo();
-        dpt.setVideoPosition(document.getElementsByTagName("video")[0].currentTime);
-        dpt.paused = true;
-        dpt.set = true;
+        if(!dpt.justPaused) {
+            dpt.pauseVideo();
+            dpt.setVideoPosition(document.getElementsByTagName("video")[0].currentTime);
+        }
+        dpt.justPaused = false;
     }
     document.getElementsByTagName("video")[0].ontimeupdate = () => {
         // Check if video time has changed significantly
         if(document.getElementsByTagName("video")[0].currentTime - lastTime >= -1 && document.getElementsByTagName("video")[0].currentTime - lastTime <= 1) {
             lastTime = document.getElementsByTagName("video")[0].currentTime;
         } else {
-            dpt.setVideoPosition(document.getElementsByTagName("video")[0].currentTime);
+            if(!dpt.justSet)
+                dpt.setVideoPosition(document.getElementsByTagName("video")[0].currentTime);
             lastTime = document.getElementsByTagName("video")[0].currentTime;
-            dpt.set = true;
+            dpt.justSet = false;
         }
     }
 }
