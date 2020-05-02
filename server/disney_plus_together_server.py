@@ -91,7 +91,7 @@ async def main(websocket, path):
                             preferences[tk] = {}
                             preferences[tk]["owner_controls"] = params[1]
                             # Set group video state
-                            groups_info[tk] = {"playing": "yes", "position": ""}
+                            groups_info[tk] = {"playing": True, "position": "0"}
                             break
                 else:
                     # Client is already in a group
@@ -126,20 +126,24 @@ async def main(websocket, path):
                 if not in_group:
                     # Try to add the client to the group
                     try:
+                        # Send the client the group code along with the video info
                         groups[params[1]].append(websocket)
-                        await websocket.send("JG:" + params[1])
-                    except KeyError:
+                        await websocket.send(f"JG:{params[1]}:{groups_info[params[1]]['playing']}:{groups_info[params[1]]['position']}")
+
+                    except KeyError as e:
                         # Client provided invalid group
                         await websocket.send("FAIL:JG_INVALID_GROUP")
-                    except:
+                        print(e)
+                    except Exception as e:
                         # Other error
                         await websocket.send("FAIL:JG_UNKNOWN_ERROR")
+                        print(e)
                 else:
                     # Client is already in a group
                     await websocket.send("FAIL:JG_IN_GROUP")
             else:
-                # Invalid websocket
-                print(f"Invalid token {message[13:43]}.")
+                # Uninitialized websocket
+                print(f"Uninitialized websocket.")
                 await websocket.send("FAIL:JG_NOT_INITIALIZED")
         
         # Client requesting to play/pause video
@@ -166,7 +170,7 @@ async def main(websocket, path):
                                 print(f"{ws.local_address} is no longer present.")
                                 groups[params[1]].remove(ws)
                         # Update group video info
-                        groups_info[params[1]]["playing"] = "yes"
+                        groups_info[params[1]]["playing"] = True
                     else:
                         for ws in groups[params[1]]:
                             try:
@@ -178,7 +182,7 @@ async def main(websocket, path):
                                 print(f"{ws.local_address} is no longer present.")
                                 groups[params[1]].remove(ws)
                         # Update group video info
-                        groups_info[params[1]]["playing"] = "no"
+                        groups_info[params[1]]["playing"] = False
             except KeyError:
                 await websocket.send("FAIL:PV_INVALID_GROUP")
         

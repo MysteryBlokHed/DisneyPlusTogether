@@ -6,9 +6,9 @@ class DisneyPlusTogether {
         this._ws = new WebSocket(`wss://${server}:${port}`);
 
         // Functions to run on certain events
-        this.onconnect = function() {}
-        this.ongroupcreate = function() {}
-        this.ongroupjoin = function() {}
+        this.onconnect = function() {};
+        this.ongroupcreate = function() {};
+        this.ongroupjoin = function() {};
 
         // Avoid essentially DOSing the server with play/pauses by tracking if updates were done by user or in the backend
         this.justPlayed = false;
@@ -59,7 +59,16 @@ class DisneyPlusTogether {
             
             // Message was a group join confirmation
             } else if(event.data.substring(0, 3) == "JG:") {
-                this._gtk = event.data.substring(3);
+                let params = event.data.split(":");
+                this._gtk = params[1];
+                
+                // Update video to proper location and play/pause state
+                if(params[2] == "True")
+                    document.getElementsByTagName("video")[0].play();
+                else
+                    document.getElementsByTagName("video")[0].pause();
+                document.getElementsByTagName("video")[0].currentTime = parseFloat(params[3]);
+
                 console.log("Joined group: " + this._gtk);
                 // Create chat window
                 this._createWindow();
