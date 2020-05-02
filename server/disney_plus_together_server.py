@@ -158,25 +158,27 @@ async def main(websocket, path):
                     if message[:4] == "PLAY":
                         for ws in groups[params[1]]:
                             try:
-                                # Send all group members the play instruction
-                                await ws.send("PLAY")
+                                # Send all group members the play instruction other than the person who played the video
+                                if ws != websocket:
+                                    await ws.send("PLAY")
                                 await ws.send(f"NOTE:{connections[websocket]} played the video")
-                                # Update group video info
-                                groups_info[params[1]]["playing"] = "yes"
                             except:
                                 print(f"{ws.local_address} is no longer present.")
                                 groups[params[1]].remove(ws)
+                        # Update group video info
+                        groups_info[params[1]]["playing"] = "yes"
                     else:
                         for ws in groups[params[1]]:
                             try:
-                                # Send all group members the pause instruction
-                                await ws.send("PAUSE")
+                                # Send all group members the pause instruction other than the person who played the video
+                                if ws != websocket:
+                                    await ws.send("PAUSE")
                                 await ws.send(f"NOTE:{connections[websocket]} paused the video")
-                                # Update group video info
-                                groups_info[params[1]]["playing"] = "no"
                             except:
                                 print(f"{ws.local_address} is no longer present.")
                                 groups[params[1]].remove(ws)
+                        # Update group video info
+                        groups_info[params[1]]["playing"] = "no"
             except KeyError:
                 await websocket.send("FAIL:PV_INVALID_GROUP")
         
@@ -195,14 +197,15 @@ async def main(websocket, path):
                 if groups[params[1]][0] == websocket or (preferences[params[1]]["owner_controls"] == "OFF" and websocket in groups[params[1]]):
                     for ws in groups[params[1]]:
                         try:
-                            # Send all group members the new video position
-                            await ws.send(f"POS:{params[2]}")
+                            # Send all group members the new video position other than the person who updated it
+                            if ws != websocket:
+                                await ws.send(f"POS:{params[2]}")
                             await ws.send(f"NOTE:{connections[websocket]} set the video time to {params[2]} seconds")
-                            # Update group video info
-                            groups_info[params[1]]["position"] = params[2]
                         except:
                             print(f"{ws.local_address} is no longer present.")
                             groups[params[1]].remove(ws)
+                    # Update group video info
+                    groups_info[params[1]]["position"] = params[2]
                 else:
                     await websocket.send("FAIL:SP_NOT_GROUP_CREATOR")
             except KeyError:
