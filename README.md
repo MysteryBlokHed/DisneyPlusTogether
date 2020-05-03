@@ -4,10 +4,10 @@
 [![License](https://img.shields.io/github/license/MysteryBlokHed/DisneyPlusTogether?style=flat-square)](https://github.com/MysteryBlokHed/DisneyPlusTogether/blob/master/LICENSE)
 [![Python](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue?style=flat-square)](https://www.python.org/downloads/)
 <!-- End of Badges -->
-A Chromium extension to allow people to sync movies and TV shows on Disney Plus.
+A Chrome extension to allow people to sync movies and TV shows on Disney Plus.
 
 ## About
-Disney Plus Together has a Chromium extension to be installed, and a server that needs to be run for it to work. There are currently no Disney Plus Together servers running, so you will have to download and run a server yourself. **If you would like to use this with friends on a different network, you will need to set up port forwarding to the machine running the server.**  
+Disney Plus Together has a Chrome extension to be installed, and a server that needs to be run for it to work. There are currently no Disney Plus Together servers running, so you will have to download and run a server yourself. **If you would like to use this with friends on a different network, you will need to set up port forwarding to the machine running the server.**  
 The extension is JavaScript and does not need anything else to be run. The server is a Python Flask server.
 
 ## Requirements (Server)
@@ -24,7 +24,7 @@ Disney Plus Together has the following features:
 - Notifications in chat when the video is played/paused or moved to a different position
 
 ## Installing the client
-The Chromium extension source code is inside the `/extension` folder in the repository.
+The Chrome extension source code is inside the `/extension` folder in the repository.
 
 ### From source code
 1. Go to the extensions page (`chrome://extensions` or `edge://extensions`)
