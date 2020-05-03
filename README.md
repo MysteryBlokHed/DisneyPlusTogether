@@ -14,12 +14,31 @@ The extension is JavaScript and does not need anything else to be run. The serve
 - Python 3.6 | 3.7 | 3.8
 - `websockets>=8.1` - Get with `python` or `python3 -m pip install "websockets>=8.1"`
 
-## Installing the client
-The Chromium extension is inside the `/extension` folder in the repository.
+## Features
+Disney Plus Together has the following features:
 
+- A chat to the right of the video player
+
+- Fully synced video (play/pause state and video position)
+
+- Notifications in chat when the video is played/paused or moved to a different position
+
+## Installing the client
+The Chromium extension source code is inside the `/extension` folder in the repository.
+
+### From source code
 1. Go to the extensions page (`chrome://extensions` or `edge://extensions`)
 2. Enable developer mode (top-right for Chrome, bottom-left for Edge)
-3. Select "load unpacked" from the new menu at the top.
+3. Select "Load unpacked" from the new menu at the top
+4. Select the `extension` folder of the repository
+
+### From a release
+The [releases page](https://github.com/MysteryBlokHed/DisneyPlusTogether/releases) for Disney Plus Together will have the zipped source code for that release as well as the compressed extension (`.crx` file used by Chromium browsers).
+
+1. Download the `.crx` file from the latest release
+2. Go to `chrome://extensions` or `edge://extensions`
+3. Drag-and-drop the `.crx` file anywhere on the page
+4. Accept the permissions (modify content on Disney Plus)
 
 Now you should see the extension in area to the right of your URL bar. Left-click it when on any Disney Plus video to activate it.
 
