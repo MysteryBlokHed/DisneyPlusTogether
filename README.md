@@ -42,6 +42,26 @@ The [releases page](https://github.com/MysteryBlokHed/DisneyPlusTogether/release
 
 Now you should see the extension in area to the right of your URL bar. Left-click it when on any Disney Plus video to activate it.
 
+## Using the client
+### Creating groups
+Groups are just groups of users to sync the videos of.
+
+1. Go to any video on Disney Plus (video must be playing, URL should start with `https://www.disneyplus.com/video/`)
+2. Open the extension popup by clicking the icon in the extensions bar
+3. Enter a display name and a server
+4. Set settings at the bottom
+5. Click "Create a Group"
+
+A group code will then appear in the extension popup, as well as a new chat window. If there is no chat window after clicking "Create a Group," try refreshing the page.
+
+### Joining groups
+1. Go to the same video as the group creator (Disney Plus Together does not automatically set the playing video)
+2. Open the extension popup by clicking the icon in the extensions bar
+3. Enter a display name, server, and the group code given to you by the group owner or another group member
+4. Click "Join Group"
+
+A group code will then appear in the extension popup, as well as a new chat window. If there is no chat window after clicking "Join Group," try refreshing the page.
+
 ## Running the server
 The server code is inside the `/server` folder in the repository. Instructions will be written relative to there.
 
