@@ -94,14 +94,14 @@ async def main(websocket, path):
 
                     # Add group token to groups list and set the creator's group
                     groups[tk] = [websocket]
-                    await websocket.send(f"CGTK:{tk}")
-                    print(f"Giving group token {tk} to {websocket.local_address}.")
                     # Set group preferences
                     preferences[tk] = {}
                     preferences[tk]["owner_controls"] = params[3]
                     # Set group video state & password
                     groups_info[tk] = {"playing": True, "position": "0", "password": params[2]}
-                    break
+                    # Send token to user
+                    await websocket.send(f"CGTK:{tk}")
+                    print(f"Giving group token {tk} to {websocket.local_address}.")
                 else:
                     # Client is already in a group
                     await websocket.send("FAIL:CG_IN_GROUP")
