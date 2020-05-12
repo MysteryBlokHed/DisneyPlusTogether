@@ -18,7 +18,7 @@ connections = {}
 # Manage groups of websockets to send commands to (play, pause, etc.)
 groups = {}
 
-# Manage video state for groups (played/paused, position)
+# Manage video state for groups as well as the group password (played/paused, position)
 groups_info = {}
 
 # Manage preferences set by the group creator
@@ -62,7 +62,7 @@ async def main(websocket, path):
             # Get parameters
             try:
                 params = message.split(":")
-                params[1]
+                params[2]
             except IndexError:
                 # Client did not provide enough parameters to create group
                 await websocket.send("FAIL:CG_MISSING_PARAMETERS")
@@ -79,20 +79,29 @@ async def main(websocket, path):
                         in_group = True
 
                 if not in_group:
-                    # Generate a group token and see if it's not taken
-                    while True:
-                        tk = secrets.token_hex(12)
-                        if tk not in groups:
-                            # Add group token to groups list and set the creator's group
-                            groups[tk] = [websocket]
-                            await websocket.send(f"CGTK:{tk}")
-                            print(f"Giving group token {tk} to {websocket.local_address}.")
-                            # Set group preferences
-                            preferences[tk] = {}
-                            preferences[tk]["owner_controls"] = params[1]
-                            # Set group video state
-                            groups_info[tk] = {"playing": True, "position": "0"}
-                            break
+                    # See if the creator provided a group name
+                    if params[1] != "":
+                        if params[1] not in groups:
+                            tk = params[1]
+                        else:
+                            await websocket.send(f"FAIL:CG_NAME_TAKEN")
+                    else:
+                        # Generate a group token and see if it's not taken
+                        while True:
+                            tk = secrets.token_hex(12)
+                            if tk not in groups:
+                                break
+
+                    # Add group token to groups list and set the creator's group
+                    groups[tk] = [websocket]
+                    await websocket.send(f"CGTK:{tk}")
+                    print(f"Giving group token {tk} to {websocket.local_address}.")
+                    # Set group preferences
+                    preferences[tk] = {}
+                    preferences[tk]["owner_controls"] = params[3]
+                    # Set group video state & password
+                    groups_info[tk] = {"playing": True, "position": "0", "password": params[2]}
+                    break
                 else:
                     # Client is already in a group
                     await websocket.send("FAIL:CG_IN_GROUP")
@@ -106,7 +115,7 @@ async def main(websocket, path):
             # Get parameters
             try:
                 params = message.split(":")
-                params[1]
+                params[2]
             except IndexError:
                 # Client did not provide enough parameters to join group
                 await websocket.send("FAIL:JG_MISSING_PARAMETERS")
@@ -124,6 +133,11 @@ async def main(websocket, path):
                         in_group = True
 
                 if not in_group:
+                    # Check if the password matches
+                    if params[2] != groups_info[params[1]]["password"]:
+                        await websocket.send(f"FAIL:JG_INVALID_PASSWORD")
+                        return
+
                     # Try to add the client to the group
                     try:
                         # Send the client the group code along with the video info

@@ -216,14 +216,14 @@ class DisneyPlusTogether {
         }
     }
 
-    createGroup(ownerControls) {
+    createGroup(ownerControls, groupName, password) {
         // Request to create a group
-        this._ws.send(`CREATE_GROUP:${ownerControls}`);
+        this._ws.send(`CREATE_GROUP:${groupName}:${password}:${ownerControls}`);
     }
 
-    joinGroup(gtk) {
+    joinGroup(gtk, password) {
         // Request to join group
-        this._ws.send(`JOIN_GROUP:${gtk}`);
+        this._ws.send(`JOIN_GROUP:${gtk}:${password}`);
     }
 
     playVideo() {
@@ -282,7 +282,7 @@ chrome.runtime.onMessage.addListener(
             dpt = new DisneyPlusTogether(request.name, request.server);
             // On DPT group create tell the extension group is ready
             dpt.onconnect = () => {
-                dpt.createGroup(request.ownerControls);
+                dpt.createGroup(request.ownerControls, request.group, request.password);
             }
             dpt.ongroupcreate = () => {
                 chrome.runtime.sendMessage({result: "CODE", code: dpt._gtk}, function(response) {});
@@ -295,7 +295,7 @@ chrome.runtime.onMessage.addListener(
             dpt = new DisneyPlusTogether(request.name, request.server);
             // On DPT group join tell the extension group is ready
             dpt.onconnect = () => {
-                dpt.joinGroup(request.group);
+                dpt.joinGroup(request.group, request.password);
             };
             dpt.ongroupjoin = () => {
                 chrome.runtime.sendMessage({result: "CODE", code: dpt._gtk}, function(response) {});

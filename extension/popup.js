@@ -2,6 +2,7 @@
 var nameElement = document.getElementById("name");
 var server = document.getElementById("server");
 var groupJoinId = document.getElementById("groupJoinId");
+var groupPassword = document.getElementById("groupPassword");
 var ownerControls = document.getElementById("ownerControls");
 
 function getCheckStatus(checkboxElement) {
@@ -18,6 +19,8 @@ document.getElementById("createButton").onclick = function() {
             command: "CREATE",
             name: nameElement.value,
             server: server.value,
+            group: groupJoinId.value,
+            password: groupPassword.value,
             ownerControls: getCheckStatus(ownerControls)
         }, function(response) {});
     });
@@ -30,7 +33,8 @@ document.getElementById("joinButton").onclick = function() {
             command: "JOIN",
             name: nameElement.value,
             server: server.value,
-            group: groupJoinId.value
+            group: groupJoinId.value,
+            password: groupPassword.value,
         }, function(response) {});
     });
 };
