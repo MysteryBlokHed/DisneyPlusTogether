@@ -8,7 +8,7 @@ A Chrome extension to allow people to sync movies and TV shows on Disney Plus.
 
 ## About
 Disney Plus Together has a Chrome extension to be installed, and a server that needs to be run for it to work. There are currently no Disney Plus Together servers running, so you will have to download and run a server yourself. **If you would like to use this with friends on a different network, you will need to set up port forwarding to the machine running the server.**  
-The extension is JavaScript and does not need anything else to be run. The server is a Python Flask server.
+The extension is JavaScript and does not need anything else to be run. The server is a Python WebSocket server.
 
 ## Requirements (Server)
 - Python 3.6 | 3.7 | 3.8
@@ -20,6 +20,8 @@ Disney Plus Together has the following features:
 - A chat to the right of the video player
 
 - Fully synced video (play/pause state and video position)
+
+- Custom group names and passwords
 
 - Notifications in chat when the video is played/paused or moved to a different position
 
