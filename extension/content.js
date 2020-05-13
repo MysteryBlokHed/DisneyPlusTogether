@@ -18,7 +18,8 @@ class DisneyPlusTogether {
         // When WebSocket opens
         this._ws.addEventListener("open", (event) => {
             // Request initialization with display name
-            this._ws.send(`INIT\uffff${displayName}`);
+            let urlEnd = window.location.pathname.split("/")[2];
+            this._ws.send(`INIT\uffff${displayName}\uffff${urlEnd}`);
         });
 
         // Handle received messages
@@ -61,6 +62,10 @@ class DisneyPlusTogether {
             } else if(event.data.substring(0, 3) == "JG\uffff") {
                 let params = event.data.split("\uffff");
                 this._gtk = params[1];
+
+                // Check if the URL is correct and change it if not
+                if(params[3] != window.location.pathname.split("/")[2])
+                    window.location.pathname = "/video/" + params[4];
                 
                 // Update video to proper location and play/pause state
                 if(params[2] == "True")
@@ -238,8 +243,11 @@ class DisneyPlusTogether {
     }
 
     createGroup(ownerControls, groupName, password) {
+        // Get current video
+        let urlEnd = window.location.pathname.split("/")[2];
         // Request to create a group
-        this._ws.send(`CREATE_GROUP\uffff${groupName}\uffff${password}\uffff${ownerControls}`);
+        console.log(`CREATE_GROUP\uffff${groupName}\uffff${password}\uffff${ownerControls}\uffff${urlEnd}`);
+        this._ws.send(`CREATE_GROUP\uffff${groupName}\uffff${password}\uffff${ownerControls}\uffff${urlEnd}`);
         // Store password so it can be added to the window
         this._password = password;
     }

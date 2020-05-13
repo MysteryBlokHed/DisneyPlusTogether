@@ -62,7 +62,7 @@ async def main(websocket, path):
             # Get parameters
             try:
                 params = message.split("\uffff")
-                params[2]
+                params[4]
             except IndexError:
                 # Client did not provide enough parameters to create group
                 await websocket.send("FAIL\uffffCG_MISSING_PARAMETERS")
@@ -97,8 +97,8 @@ async def main(websocket, path):
                     # Set group preferences
                     preferences[tk] = {}
                     preferences[tk]["owner_controls"] = params[3]
-                    # Set group video state & password
-                    groups_info[tk] = {"playing": True, "position": "0", "password": params[2]}
+                    # Set group video state, password & url
+                    groups_info[tk] = {"playing": True, "position": "0", "password": params[2], "video": params[4]}
                     # Send token to user
                     await websocket.send(f"CGTK\uffff{tk}")
                     print(f"Giving group token {tk} to {websocket.local_address}.")
@@ -142,7 +142,7 @@ async def main(websocket, path):
                     try:
                         # Send the client the group code along with the video info
                         groups[params[1]].append(websocket)
-                        await websocket.send(f"JG\uffff{params[1]}\uffff{groups_info[params[1]]['playing']}\uffff{groups_info[params[1]]['position']}")
+                        await websocket.send(f"JG\uffff{params[1]}\uffff{groups_info[params[1]]['playing']}\uffff{groups_info[params[1]]['position']}\uffff{groups_info[params[1]]['video']}")
 
                     except KeyError as e:
                         # Client provided invalid group
