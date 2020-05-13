@@ -117,12 +117,33 @@ class DisneyPlusTogether {
 
         // Put group token at top
         let gtk = document.createElement("h3");
-        gtk.innerHTML = "Code:<br>" + this._gtk;
+        gtk.innerText = "Group Name: " + this._gtk;
         gtk.style.textAlign = "center";
         gtk.style.color = "white";
 
         // Add token to window
         this._dpTogetherWindow.appendChild(gtk);
+
+        // Add password under group token
+        let passText = document.createElement("span");
+        passText.style.color = "white";
+        passText.style.fontWeight = "bold";
+        passText.style.fontSize = "1.2em";
+        passText.innerText = "Password: ";
+
+        let pass = document.createElement("span");
+        pass.style.color = "white";
+        pass.style.backgroundColor = "white";
+        pass.innerText = this._password;
+        
+        // Mouse enter/leave events to hide password
+        pass.onmouseenter = () => { pass.style.backgroundColor = ""; }
+        pass.onmouseleave = () => { pass.style.backgroundColor = "white"; }
+
+        passText.appendChild(pass);
+
+        // Add password to window
+        this._dpTogetherWindow.appendChild(passText);
 
         // Create div to hold messages
         let messageArea = document.createElement("div");
@@ -204,14 +225,14 @@ class DisneyPlusTogether {
 
             try {
                 // Add message to window
-                this._dpTogetherWindow.children[1].insertBefore(msg, this._dpTogetherWindow.children[1].firstChild);
+                this._dpTogetherWindow.children[2].insertBefore(msg, this._dpTogetherWindow.children[2].firstChild);
                 // Add line break for next message
-                this._dpTogetherWindow.children[1].insertBefore(document.createElement("br"), this._dpTogetherWindow.children[1].firstChild);
+                this._dpTogetherWindow.children[2].insertBefore(document.createElement("br"), this._dpTogetherWindow.children[2].firstChild);
             } catch {
                 // Add message to window
-                this._dpTogetherWindow.children[1].appendChild(msg);
+                this._dpTogetherWindow.children[2].appendChild(msg);
                 // Add line break for next message
-                this._dpTogetherWindow.children[1].insertBefore(document.createElement("br"), this._dpTogetherWindow.children[1].firstChild);
+                this._dpTogetherWindow.children[2].insertBefore(document.createElement("br"), this._dpTogetherWindow.children[2].firstChild);
             }
         }
     }
@@ -219,11 +240,15 @@ class DisneyPlusTogether {
     createGroup(ownerControls, groupName, password) {
         // Request to create a group
         this._ws.send(`CREATE_GROUP:${groupName}:${password}:${ownerControls}`);
+        // Store password so it can be added to the window
+        this._password = password;
     }
 
     joinGroup(gtk, password) {
         // Request to join group
         this._ws.send(`JOIN_GROUP:${gtk}:${password}`);
+        // Store password so it can be added to the window
+        this._password = password;
     }
 
     playVideo() {
