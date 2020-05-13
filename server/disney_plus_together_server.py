@@ -40,32 +40,32 @@ async def main(websocket, path):
         #             break
 
         # Client requesting initialization
-        if message[:5] == "INIT:":
+        if message[:5] == "INIT\uffff":
             # Get parameters
             try:
-                params = message.split(":")
+                params = message.split("\uffff")
                 params[1]
             except IndexError:
                 # Client did not provide enough parameters
-                await websocket.send("FAIL:IN_MISSING_PARAMETERS")
+                await websocket.send("FAIL\uffffIN_MISSING_PARAMETERS")
             
             print(f"Initialization from {websocket.local_address}.")
             if websocket not in connections:
                 connections[websocket] = params[1]
-                await websocket.send("INIT:OK")
+                await websocket.send("INIT\uffffOK")
             else:
-                await websocket.send("FAIL:IN_ALREADY_DONE")
+                await websocket.send("FAIL\uffffIN_ALREADY_DONE")
         
         # Client requesting group creation
-        elif message[:13] == "CREATE_GROUP:":
+        elif message[:13] == "CREATE_GROUP\uffff":
             print(f"Group creation request from {websocket.local_address}.")
             # Get parameters
             try:
-                params = message.split(":")
+                params = message.split("\uffff")
                 params[2]
             except IndexError:
                 # Client did not provide enough parameters to create group
-                await websocket.send("FAIL:CG_MISSING_PARAMETERS")
+                await websocket.send("FAIL\uffffCG_MISSING_PARAMETERS")
             
             # Check if the client has initialized
             if websocket in connections:
@@ -84,7 +84,7 @@ async def main(websocket, path):
                         if params[1] not in groups:
                             tk = params[1]
                         else:
-                            await websocket.send(f"FAIL:CG_NAME_TAKEN")
+                            await websocket.send(f"FAIL\uffffCG_NAME_TAKEN")
                     else:
                         # Generate a group token and see if it's not taken
                         while True:
@@ -100,25 +100,25 @@ async def main(websocket, path):
                     # Set group video state & password
                     groups_info[tk] = {"playing": True, "position": "0", "password": params[2]}
                     # Send token to user
-                    await websocket.send(f"CGTK:{tk}")
+                    await websocket.send(f"CGTK\uffff{tk}")
                     print(f"Giving group token {tk} to {websocket.local_address}.")
                 else:
                     # Client is already in a group
-                    await websocket.send("FAIL:CG_IN_GROUP")
+                    await websocket.send("FAIL\uffffCG_IN_GROUP")
             else:
                 # Invalid websocket
                 print(f"Invalid token {message[13:]}.")
-                await websocket.send("FAIL:CG_NOT_INITIALIZED")
+                await websocket.send("FAIL\uffffCG_NOT_INITIALIZED")
         
         # Client requesting to join group
-        elif message[:11] == "JOIN_GROUP:":
+        elif message[:11] == "JOIN_GROUP\uffff":
             # Get parameters
             try:
-                params = message.split(":")
+                params = message.split("\uffff")
                 params[2]
             except IndexError:
                 # Client did not provide enough parameters to join group
-                await websocket.send("FAIL:JG_MISSING_PARAMETERS")
+                await websocket.send("FAIL\uffffJG_MISSING_PARAMETERS")
             
             print(f"Group join request from {websocket.local_address} with session token {params[1]}.")
             # Check if an initialized websocket is being used
@@ -135,40 +135,40 @@ async def main(websocket, path):
                 if not in_group:
                     # Check if the password matches
                     if params[2] != groups_info[params[1]]["password"]:
-                        await websocket.send(f"FAIL:JG_INVALID_PASSWORD")
+                        await websocket.send(f"FAIL\uffffJG_INVALID_PASSWORD")
                         return
 
                     # Try to add the client to the group
                     try:
                         # Send the client the group code along with the video info
                         groups[params[1]].append(websocket)
-                        await websocket.send(f"JG:{params[1]}:{groups_info[params[1]]['playing']}:{groups_info[params[1]]['position']}")
+                        await websocket.send(f"JG\uffff{params[1]}\uffff{groups_info[params[1]]['playing']}\uffff{groups_info[params[1]]['position']}")
 
                     except KeyError as e:
                         # Client provided invalid group
-                        await websocket.send("FAIL:JG_INVALID_GROUP")
+                        await websocket.send("FAIL\uffffJG_INVALID_GROUP")
                         print(e)
                     except Exception as e:
                         # Other error
-                        await websocket.send("FAIL:JG_UNKNOWN_ERROR")
+                        await websocket.send("FAIL\uffffJG_UNKNOWN_ERROR")
                         print(e)
                 else:
                     # Client is already in a group
-                    await websocket.send("FAIL:JG_IN_GROUP")
+                    await websocket.send("FAIL\uffffJG_IN_GROUP")
             else:
                 # Uninitialized websocket
                 print(f"Uninitialized websocket.")
-                await websocket.send("FAIL:JG_NOT_INITIALIZED")
+                await websocket.send("FAIL\uffffJG_NOT_INITIALIZED")
         
         # Client requesting to play/pause video
-        elif message[:5] == "PLAY:" or message[:6] == "PAUSE:":
+        elif message[:5] == "PLAY\uffff" or message[:6] == "PAUSE\uffff":
             # Get parameters
             try:
-                params = message.split(":")
+                params = message.split("\uffff")
                 params[1]
             except IndexError:
                 # Client did not provide enough parameters to join group
-                await websocket.send("FAIL:PV_MISSING_PARAMETERS")
+                await websocket.send("FAIL\uffffPV_MISSING_PARAMETERS")
 
             # Check if client created the group (first member of the group) or the group allows anyone to control
             try:
@@ -179,7 +179,7 @@ async def main(websocket, path):
                                 # Send all group members the play instruction other than the person who played the video
                                 if ws != websocket:
                                     await ws.send("PLAY")
-                                await ws.send(f"NOTE:{connections[websocket]} played the video")
+                                await ws.send(f"NOTE\uffff{connections[websocket]} played the video")
                             except:
                                 print(f"{ws.local_address} is no longer present.")
                                 groups[params[1]].remove(ws)
@@ -191,24 +191,24 @@ async def main(websocket, path):
                                 # Send all group members the pause instruction other than the person who played the video
                                 if ws != websocket:
                                     await ws.send("PAUSE")
-                                await ws.send(f"NOTE:{connections[websocket]} paused the video")
+                                await ws.send(f"NOTE\uffff{connections[websocket]} paused the video")
                             except:
                                 print(f"{ws.local_address} is no longer present.")
                                 groups[params[1]].remove(ws)
                         # Update group video info
                         groups_info[params[1]]["playing"] = False
             except KeyError:
-                await websocket.send("FAIL:PV_INVALID_GROUP")
+                await websocket.send("FAIL\uffffPV_INVALID_GROUP")
         
         # Client requesting to set video time
-        elif message[:8] == "SET_POS:":
+        elif message[:8] == "SET_POS\uffff":
             # Get parameters
             try:
-                params = message.split(":")
+                params = message.split("\uffff")
                 params[2]
             except IndexError:
                 # Client did not provide enough parameters to join group
-                await websocket.send("FAIL:SP_MISSING_PARAMETERS")
+                await websocket.send("FAIL\uffffSP_MISSING_PARAMETERS")
             
             # Check if client created the group (first member of the group) or the group allows anyone to control
             try:
@@ -217,27 +217,27 @@ async def main(websocket, path):
                         try:
                             # Send all group members the new video position other than the person who updated it
                             if ws != websocket:
-                                await ws.send(f"POS:{params[2]}")
-                            await ws.send(f"NOTE:{connections[websocket]} set the video time to {params[2]} seconds")
+                                await ws.send(f"POS\uffff{params[2]}")
+                            await ws.send(f"NOTE\uffff{connections[websocket]} set the video time to {params[2]} seconds")
                         except:
                             print(f"{ws.local_address} is no longer present.")
                             groups[params[1]].remove(ws)
                     # Update group video info
                     groups_info[params[1]]["position"] = params[2]
                 else:
-                    await websocket.send("FAIL:SP_NOT_GROUP_CREATOR")
+                    await websocket.send("FAIL\uffffSP_NOT_GROUP_CREATOR")
             except KeyError:
-                await websocket.send("FAIL:SP_INVALID_GROUP")
+                await websocket.send("FAIL\uffffSP_INVALID_GROUP")
         
         # Client sending message
-        elif message[:5] == "CHAT:":
+        elif message[:5] == "CHAT\uffff":
             # Get parameters
             try:
-                params = message.split(":")
+                params = message.split("\uffff")
                 params[2]
             except IndexError:
                 # Client did not provide enough parameters to join group
-                await websocket.send("FAIL:CT_MISSING_PARAMETERS")
+                await websocket.send("FAIL\uffffCT_MISSING_PARAMETERS")
             
             # Check if client is in the group
             try:
@@ -245,14 +245,14 @@ async def main(websocket, path):
                     # Send all group members the message
                     for ws in groups[params[1]]:
                         try:
-                            await ws.send(f"CHAT:{connections[websocket]}:{params[2]}")
+                            await ws.send(f"CHAT\uffff{connections[websocket]}\uffff{params[2]}")
                         except:
                             print(f"{ws.local_address} is no longer present.")
                             groups[params[1]].remove(ws)
                 else:
-                    await websocket.send("FAIL:CT_NOT_IN_GROUP")
+                    await websocket.send("FAIL\uffffCT_NOT_IN_GROUP")
             except KeyError:
-                await websocket.send("FAIL:CT_INVALID_GROUP")
+                await websocket.send("FAIL\uffffCT_INVALID_GROUP")
 
 # Run WebSocket
 asyncio.get_event_loop().run_until_complete(

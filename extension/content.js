@@ -18,7 +18,7 @@ class DisneyPlusTogether {
         // When WebSocket opens
         this._ws.addEventListener("open", (event) => {
             // Request initialization with display name
-            this._ws.send(`INIT:${displayName}`);
+            this._ws.send(`INIT\uffff${displayName}`);
         });
 
         // Handle received messages
@@ -29,13 +29,13 @@ class DisneyPlusTogether {
             //     console.log("Received token: " + this._stk);
 
             // Message was an initialization confirmation
-            if(event.data.substring(0, 7) == "INIT:OK") {
+            if(event.data.substring(0, 7) == "INIT\uffffOK") {
                 console.log("Initialized.");
                 // Run the onconnect function
                 this.onconnect();
 
             // Message was a group token for a created group
-            } else if(event.data.substring(0, 5) == "CGTK:") {
+            } else if(event.data.substring(0, 5) == "CGTK\uffff") {
                 this._gtk = event.data.substring(5);
                 console.log("Created group: " + this._gtk);
                 // Create chat window
@@ -44,22 +44,22 @@ class DisneyPlusTogether {
                 this.ongroupcreate();
             
             // Message was a chat message
-            } else if(event.data.substring(0, 5) == "CHAT:") {
+            } else if(event.data.substring(0, 5) == "CHAT\uffff") {
                 console.log("Received chat message.");
-                let params = event.data.split(":");
+                let params = event.data.split("\uffff");
                 // Add message to chat window
                 this._addMessage(params[1], params[2]);
 
             // Message was an update (eg. play/pause)
-            } else if(event.data.substring(0, 5) == "NOTE:") {
+            } else if(event.data.substring(0, 5) == "NOTE\uffff") {
                 console.log("Received status update.");
-                let params = event.data.split(":");
+                let params = event.data.split("\uffff");
                 // Add to window
                 this._addMessage(params[1], "", "gray");
             
             // Message was a group join confirmation
-            } else if(event.data.substring(0, 3) == "JG:") {
-                let params = event.data.split(":");
+            } else if(event.data.substring(0, 3) == "JG\uffff") {
+                let params = event.data.split("\uffff");
                 this._gtk = params[1];
                 
                 // Update video to proper location and play/pause state
@@ -76,7 +76,7 @@ class DisneyPlusTogether {
                 this.ongroupjoin();
 
             // Message was an error of some kind
-            } else if(event.data.substring(0, 5) == "FAIL:") {
+            } else if(event.data.substring(0, 5) == "FAIL\uffff") {
                 console.error(event.data.substring(5));
             
             // Message was to play the video
@@ -92,7 +92,7 @@ class DisneyPlusTogether {
                 document.getElementsByTagName("video")[0].pause();
             
             // Message was a new video position
-            } else if(event.data.substring(0, 4) == "POS:") {
+            } else if(event.data.substring(0, 4) == "POS\uffff") {
                 this.justSet = true;
                 console.log("Setting video time to " + event.data.substring(4));
                 document.getElementsByTagName("video")[0].currentTime = parseFloat(event.data.substring(4));
@@ -239,33 +239,33 @@ class DisneyPlusTogether {
 
     createGroup(ownerControls, groupName, password) {
         // Request to create a group
-        this._ws.send(`CREATE_GROUP:${groupName}:${password}:${ownerControls}`);
+        this._ws.send(`CREATE_GROUP\uffff${groupName}\uffff${password}\uffff${ownerControls}`);
         // Store password so it can be added to the window
         this._password = password;
     }
 
     joinGroup(gtk, password) {
         // Request to join group
-        this._ws.send(`JOIN_GROUP:${gtk}:${password}`);
+        this._ws.send(`JOIN_GROUP\uffff${gtk}\uffff${password}`);
         // Store password so it can be added to the window
         this._password = password;
     }
 
     playVideo() {
-        this._ws.send(`PLAY:${this._gtk}`);
+        this._ws.send(`PLAY\uffff${this._gtk}`);
     }
 
     pauseVideo() {
-        this._ws.send(`PAUSE:${this._gtk}`);
+        this._ws.send(`PAUSE\uffff${this._gtk}`);
     }
 
     setVideoPosition(position) {
-        this._ws.send(`SET_POS:${this._gtk}:${position}`);
+        this._ws.send(`SET_POS\uffff${this._gtk}\uffff${position}`);
     }
 
     sendMessage(message) {
         // Send a message to the group members
-        this._ws.send(`CHAT:${this._gtk}:${message}`);
+        this._ws.send(`CHAT\uffff${this._gtk}\uffff${message}`);
     }
 };
 
