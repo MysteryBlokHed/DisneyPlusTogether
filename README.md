@@ -73,3 +73,6 @@ The server code is inside the `/server` folder in the repository. Instructions w
 1. Install the requirements by running `python` or `python3 -m pip install -r requirements.txt`.
 2. Name your TLS certificate `certificate.crt` and your private key `key.pem`, and place them in the same directory as the server. These files are already in the `.gitignore`.
 3. Run the server using `python` or `python3 disney_plus_together_server.py`.
+
+## License
+Disney Plus Together is licensed under the MIT License. For more information, check [its page on choosealicense](https://choosealicense.com/licenses/mit/).
