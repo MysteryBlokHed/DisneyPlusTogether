@@ -64,7 +64,7 @@ class DisneyPlusTogether {
                 this._gtk = params[1];
 
                 // Check if the URL is correct and change it if not
-                if(params[3] != window.location.pathname.split("/")[2])
+                if(params[4] != window.location.pathname.split("/")[2])
                     window.location.pathname = "/video/" + params[4];
                 
                 // Update video to proper location and play/pause state
