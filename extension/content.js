@@ -307,35 +307,37 @@ function initializeVidListeners() {
     }
 }
 
+var port = chrome.runtime.connect();
+
 // Handle requests from the extension
-chrome.runtime.onMessage.addListener(
-    function(request, sender, sendResponse) {
+port.onMessage.addListener(
+    function(msg) {
         // Message was to create a group
-        if(request.command == "CREATE") {
-            dpt = new DisneyPlusTogether(request.name, request.server);
+        if(msg.command == "CREATE") {
+            dpt = new DisneyPlusTogether(msg.name, msg.server);
             // On DPT group create tell the extension group is ready
             dpt.onconnect = () => {
-                dpt.createGroup(request.ownerControls, request.group, request.password);
+                dpt.createGroup(msg.ownerControls, msg.group, msg.password);
             }
             dpt.ongroupcreate = () => {
-                chrome.runtime.sendMessage({result: "CODE", code: dpt._gtk}, function(response) {});
+                port.postMessage({result: "CODE", code: dpt._gtk}, function(response) {});
                 initializeVidListeners();
             };
-            sendResponse({result: "PROCESSING"});
+            port.postMessage({result: "PROCESSING"});
         
         // Message was to join a group
-        } else if(request.command == "JOIN") {
-            dpt = new DisneyPlusTogether(request.name, request.server);
+        } else if(msg.command == "JOIN") {
+            dpt = new DisneyPlusTogether(msg.name, msg.server);
             // On DPT group join tell the extension group is ready
             dpt.onconnect = () => {
-                dpt.joinGroup(request.group, request.password);
+                dpt.joinGroup(msg.group, msg.password);
             };
             dpt.ongroupjoin = () => {
-                chrome.runtime.sendMessage({result: "CODE", code: dpt._gtk}, function(response) {});
+                port.postMessage({result: "CODE", code: dpt._gtk}, function(response) {});
                 initializeVidListeners();
             };
-            sendResponse({result: "PROCESSING"});
+            port.postMessage({result: "PROCESSING"});
         } else {
-            sendResponse({result: "UNKNOWN"});
+            port.postMessage({result: "UNKNOWN"});
         }
     });
