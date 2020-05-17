@@ -40,14 +40,11 @@ document.getElementById("joinButton").onclick = function() {
 };
 
 // Get responses from content script
-chrome.runtime.onConnect.addListener(function(port) {
-    port.onMessage.addListener(
-        function(msg) {
-            // Group code
-            if(msg.result == "CODE") {
-                document.getElementById("content").innerHTML = `<h1>Group Code: ${msg.code}</h1>`;
-            }
-            sendResponse({o: "k"});
+chrome.runtime.onMessage.addListener(
+    function(request, sender, sendResponse) {
+        // Group code
+        if(request.result == "CODE") {
+            document.getElementById("content").innerHTML = `<h1>Group Code: ${request.code}</h1>`;
         }
-    );
-});
+        sendResponse({o: "k"});
+    });
