@@ -16,14 +16,14 @@ class DisneyPlusTogether {
         this.justSet = false;
 
         // When WebSocket opens
-        this._ws.addEventListener("open", (event) => {
+        this._ws.addEventListener("open", () => {
             // Request initialization with display name
             let urlEnd = window.location.pathname.split("/")[2];
             this._ws.send(`INIT\uffff${displayName}\uffff${urlEnd}`);
         });
 
         // Handle received messages
-        this._ws.addEventListener("message", (event) => {
+        this._ws.addEventListener("message", () => {
             // // Message was a session token
             // if(event.data.substring(0, 4) == "STK:") {
             //     this._stk = event.data.substring(4);
@@ -142,8 +142,8 @@ class DisneyPlusTogether {
         pass.innerText = this._password;
         
         // Mouse enter/leave events to hide password
-        pass.onmouseenter = () => { pass.style.backgroundColor = ""; }
-        pass.onmouseleave = () => { pass.style.backgroundColor = "white"; }
+        pass.onmouseenter = () => pass.style.backgroundColor = "";
+        pass.onmouseleave = () => pass.style.backgroundColor = "white";
 
         passText.appendChild(pass);
 
@@ -277,6 +277,8 @@ class DisneyPlusTogether {
     }
 };
 
+console.log(_ws);
+
 var dpt;
 var lastTime = 0;
 
@@ -314,9 +316,7 @@ chrome.runtime.onMessage.addListener(
         if(request.command == "CREATE") {
             dpt = new DisneyPlusTogether(request.name, request.server);
             // On DPT group create tell the extension group is ready
-            dpt.onconnect = () => {
-                dpt.createGroup(request.ownerControls, request.group, request.password);
-            }
+            dpt.onconnect = () => dpt.createGroup(request.ownerControls, request.group, request.password);
             dpt.ongroupcreate = () => {
                 chrome.runtime.sendMessage({result: "CODE", code: dpt._gtk}, function(response) {});
                 initializeVidListeners();
@@ -327,9 +327,7 @@ chrome.runtime.onMessage.addListener(
         } else if(request.command == "JOIN") {
             dpt = new DisneyPlusTogether(request.name, request.server);
             // On DPT group join tell the extension group is ready
-            dpt.onconnect = () => {
-                dpt.joinGroup(request.group, request.password);
-            };
+            dpt.onconnect = () => dpt.joinGroup(request.group, request.password);
             dpt.ongroupjoin = () => {
                 chrome.runtime.sendMessage({result: "CODE", code: dpt._gtk}, function(response) {});
                 initializeVidListeners();

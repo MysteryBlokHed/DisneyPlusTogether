@@ -11,7 +11,7 @@ function getCheckStatus(checkboxElement) {
 }
 
 // Set button click actions
-document.getElementById("createButton").onclick = function() {
+document.getElementById("createButton").onclick = () => {
     console.log(nameElement);
     // Initialize and create a group
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
@@ -26,7 +26,7 @@ document.getElementById("createButton").onclick = function() {
     });
 };
 
-document.getElementById("joinButton").onclick = function() {
+document.getElementById("joinButton").onclick = () => {
     // Initialize and join a group
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
         chrome.tabs.sendMessage(tabs[0].id, {
