@@ -246,7 +246,6 @@ class DisneyPlusTogether {
         // Get current video
         let urlEnd = window.location.pathname.split("/")[2];
         // Request to create a group
-        console.log(`CREATE_GROUP\uffff${groupName}\uffff${password}\uffff${ownerControls}\uffff${urlEnd}`);
         this._ws.send(`CREATE_GROUP\uffff${groupName}\uffff${password}\uffff${ownerControls}\uffff${urlEnd}`);
         // Store password so it can be added to the window
         this._password = password;
@@ -276,8 +275,6 @@ class DisneyPlusTogether {
         this._ws.send(`CHAT\uffff${this._gtk}\uffff${message}`);
     }
 };
-
-console.log(_ws);
 
 var dpt;
 var lastTime = 0;
