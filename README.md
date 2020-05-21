@@ -26,29 +26,20 @@ Disney Plus Together has the following features:
 - Notifications in chat when the video is played/paused or moved to a different position
 
 ## Installing the client
-The Chrome extension source code is inside the `/extension` folder in the repository.
+The Chrome extension source code is inside the `/extension` folder in the repository. You can get the latest release either by cloning the `master` branch, or by downloading the latest source code from the [releases page](https://github.com/MysteryBlokHed/DisneyPlusTogether/releases). Note that you **cannot install `.crx` files from untrusted sources**.
 
-### From source code
-1. Go to the extensions page (`chrome://extensions` or `edge://extensions`)
+1. Go to the extensions page (`chrome://extensions`)
 2. Enable developer mode (top-right for Chrome, bottom-left for Edge)
 3. Select "Load unpacked" from the new menu at the top
 4. Select the `extension` folder of the repository
 
-### From a release
-The [releases page](https://github.com/MysteryBlokHed/DisneyPlusTogether/releases) for Disney Plus Together will have the zipped source code for that release as well as the compressed extension (`.crx` file used by Chromium browsers).
-
-1. Download the `.crx` file from the latest release
-2. Go to `chrome://extensions` or `edge://extensions`
-3. Drag-and-drop the `.crx` file anywhere on the page
-4. Accept the permissions (modify content on Disney Plus)
-
-Now you should see the extension in area to the right of your URL bar. Left-click it when on any Disney Plus video to activate it.
+Now you should see the extension in the area to the right of your URL bar. Left-click it when on any Disney Plus video to open it.
 
 ## Using the client
 ### Creating groups
 Groups are just groups of users to sync the videos of.
 
-1. Go to any video on Disney Plus (video must be playing, URL should start with `https://www.disneyplus.com/video/`)
+1. Go to any video on Disney Plus (video must be fully loaded, URL should start with `https://www.disneyplus.com/video/`)
 2. Open the extension popup by clicking the icon in the extensions bar
 3. Enter a display name and a server
 4. Set settings at the bottom
