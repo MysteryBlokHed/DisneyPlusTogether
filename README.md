@@ -49,10 +49,12 @@ Groups are just groups of users to sync the videos of.
 A group code will then appear in the extension popup, as well as a new chat window. If there is no chat window after clicking "Create Group," try refreshing the page.
 
 ### Joining groups
-1. Go to the same video as the group creator (Disney Plus Together does not automatically set the playing video)
+1. Go to any video (URL should start with `https://www.disneyplus.com/video/`)
 2. Open the extension popup by clicking the icon in the extensions bar
 3. Enter a display name, server, the group name, and the password given to you by the group owner or another group member
 4. Click "Join Group"
+
+If you are not on the same video as the creator, you will be redirected.
 
 A group code will then appear in the extension popup, as well as a new chat window. If there is no chat window after clicking "Join Group," try refreshing the page.
 
