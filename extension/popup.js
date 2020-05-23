@@ -44,6 +44,9 @@ chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
         // Group code
         if(request.result == "CODE") {
+            // Change popup dimensions
+            document.body.parentElement.style.height = "200px";
+            document.body.style.height = "200px";
             document.getElementById("content").innerHTML = `<h1>Group Code: ${request.code}</h1>`;
         }
         sendResponse({o: "k"});

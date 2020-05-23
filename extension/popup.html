@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Disney Plus Together</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300&display=swap" type="text/css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300&display=swap" type="text/css" />
     <style>
         * {
             font-family: 'Manrope', sans-serif;
@@ -12,9 +12,19 @@
             text-align: center;
         }
 
+        html, body {
+            width: 260px;
+            margin-right: 15px;
+        }
+
         button, input {
             font-weight: 300;
             margin-bottom: 5px;
+            width: 75%;
+        }
+
+        .checkbox {
+            width: auto;
         }
 
         h1, h2 {
@@ -24,27 +34,31 @@
     </style>
 </head>
 <body>
-    <img width="150" height="150" src="images/icon_large.png" alt="Disney Plus Together">
+    <img width="150" height="150" src="images/icon_large.png" alt="Disney Plus Together" />
     <h1>Disney Plus Together</h1>
     <div id="content">
         <label for="name">Name:</label>
+        <br />
         <input type="text" id="name" placeholder="DPT User">
-        <br>
+        <br />
         <label for="server">Server:</label>
+        <br />
         <input type="text" id="server" placeholder="127.0.0.1">
-        <br>
+        <br />
         <label for="groupJoinId">Group Name:</label>
+        <br />
         <input type="text" id="groupJoinId" placeholder="Group Name...">
-        <br>
+        <br />
         <label for="groupPassword">Group Password:</label>
+        <br />
         <input type="password" id="groupPassword" placeholder="Password...">
-        <hr>
+        <hr />
         <button id="joinButton">Join Group</button>
-        <hr>
+        <hr />
         <button id="createButton">Create Group</button>
-        <hr>
+        <hr />
         <h2>Group Creation Settings</h3>
-        <input type="checkbox" id="ownerControls">
+        <input type="checkbox" class="checkbox" id="ownerControls">
         <label for="ownerControls">Only group creator controls video</label>
     </div>
     <script src="popup.js"></script>
