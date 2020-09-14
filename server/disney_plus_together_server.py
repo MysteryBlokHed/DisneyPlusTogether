@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Created by Adam Thompson-Sharpe on 20/04/2020.
 # Licensed under MIT.
 import argparse
