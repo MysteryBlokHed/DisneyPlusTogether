@@ -61,7 +61,7 @@ A group code will then appear in the extension popup, as well as a new chat wind
 ## Running the server
 The server code is inside the `/server` folder in the repository. Instructions will be written relative to there.
 
-**IMPORTANT: If you want to use this with others (which is likely), you will need a server on a different network as well as a TLS certificate.** I recommend [ZeroSSL](http://zerossl.com/) to create the certificate, since it's free, uses [Let's Encrypt](https://letsencrypt.org/), is cross-platform (only important for certificate creation), and is trusted by most browsers I've seen. Using a self-signed certificate is not trusted by any browser unless you manually add it.
+**IMPORTANT: If you want to use this with others (which is likely), you will need a server on a different network as well as a TLS certificate.** Using a self-signed certificate is not trusted by any browser unless you manually add it, so you'll need to find a trusted service to get your keys.
 
 1. Install the requirements by running `python` or `python3 -m pip install -r requirements.txt`.
 2. Name your TLS certificate `certificate.crt` and your private key `key.pem`, and place them in the same directory as the server. These files are already in the `.gitignore`.
