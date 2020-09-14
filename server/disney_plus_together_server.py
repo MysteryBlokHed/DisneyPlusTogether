@@ -1,16 +1,29 @@
 # Created by Adam Thompson-Sharpe on 20/04/2020.
 # Licensed under MIT.
+import argparse
 import asyncio
 import secrets
 import ssl
+import sys
 import websockets
 
 PORT = 2626
 
+# Check args
+args = sys.argv[1:]
+
+# Parse args
+parser = argparse.ArgumentParser()
+parser.add_argument("--certificate", help="The certificate file to use with SSL", action="store", nargs="?", type=str, default="certificate.crt")
+parser.add_argument("--key", help="The private key file to use with SSL", action="store", nargs="?", type=str, default="key.pem")
+parser.add_argument("--ssl", help="Enables SSL if specified", action="store_true")
+
+args = parser.parse_args()
+
 # Used for SSL
-ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-ssl_context.load_cert_chain("certificate.crt", "key.pem")
-# ssl_context.load_cert_chain("certificate.crt")
+if args.ssl:
+    ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    ssl_context.load_cert_chain(args.certificate, args.key)
 
 # Bind websockets to display names
 connections = {}
@@ -277,7 +290,11 @@ async def main(websocket, path):
                 await websocket.send("FAIL\uffffCT_INVALID_GROUP")
 
 # Run WebSocket
-asyncio.get_event_loop().run_until_complete(
-    # websockets.serve(main, "0.0.0.0", PORT))
-    websockets.serve(main, "0.0.0.0", PORT, ssl=ssl_context))
-asyncio.get_event_loop().run_forever()
+if args.ssl:
+    asyncio.get_event_loop().run_until_complete(
+        websockets.serve(main, "0.0.0.0", PORT, ssl=ssl_context))
+    asyncio.get_event_loop().run_forever()
+else:
+    asyncio.get_event_loop().run_until_complete(
+        websockets.serve(main, "0.0.0.0", PORT))
+    asyncio.get_event_loop().run_forever()

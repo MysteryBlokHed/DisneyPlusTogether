@@ -61,11 +61,15 @@ A group code will then appear in the extension popup, as well as a new chat wind
 ## Running the server
 The server code is inside the `/server` folder in the repository. Instructions will be written relative to there.
 
-**IMPORTANT: If you want to use this with others (which is likely), you will need a server on a different network as well as a TLS certificate.** Using a self-signed certificate is not trusted by any browser unless you manually add it, so you'll need to find a trusted service to get your keys.
+**IMPORTANT: If you want to use this with others (which is likely), you will need a server on a different network as well as an SSL certificate.** Using a self-signed certificate is not trusted by any browser unless you manually add it, so you'll need to find a trusted service to get your keys.
 
 1. Install the requirements by running `python` or `python3 -m pip install -r requirements.txt`.
-2. Name your TLS certificate `certificate.crt` and your private key `key.pem`, and place them in the same directory as the server. These files are already in the `.gitignore`.
-3. Run the server using `python` or `python3 disney_plus_together_server.py`.
+2. Run the server using `python disney_plus_together_server.py`. If you are using SSL, run `python disney_plus_together_server.py --ssl`.
+
+### Arguments
+`--ssl` - Enables SSL if specified  
+`--certificate FILE` - The certificate file to use with SSL  
+`--key FILE` - The private key file to use with SSL
 
 ## License
 Disney Plus Together is licensed under the MIT License. For more information, check [its page on choosealicense](https://choosealicense.com/licenses/mit/).
