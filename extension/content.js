@@ -14,6 +14,11 @@ class DisneyPlusTogether {
         this.justPlayed = false;
         this.justPaused = false;
         this.justSet = false;
+        this.justGaveTime = false;
+
+        // Keep track of the owner to know whether to update others or update yourself while buffering
+        this.createdGroup = false;
+        this.buffering = false;
 
         // When WebSocket opens
         this._ws.addEventListener("open", () => {
@@ -39,6 +44,8 @@ class DisneyPlusTogether {
             } else if(event.data.substring(0, 5) == "CGTK\uffff") {
                 this._gtk = event.data.substring(5);
                 console.log("Created group: " + this._gtk);
+                // Set self as group creator
+                this.createdGroup = true;
                 // Create chat window
                 this._createWindow();
                 // Run the ongroupcreate function
@@ -62,6 +69,9 @@ class DisneyPlusTogether {
             } else if(event.data.substring(0, 3) == "JG\uffff") {
                 let params = event.data.split("\uffff");
                 this._gtk = params[1];
+
+                // Set self as not group creator internally
+                this.createdGroup = false;
 
                 // Check if the URL is correct and change it if not
                 if(params[4] != window.location.pathname.split("/")[2])
@@ -101,6 +111,12 @@ class DisneyPlusTogether {
                 this.justSet = true;
                 console.log("Setting video time to " + event.data.substring(4));
                 document.getElementsByTagName("video")[0].currentTime = parseFloat(event.data.substring(4));
+
+            // Message was a request for the current video position
+            } else if(event.data.substring(0, 7) == "GET_POS") {
+                this.justGaveTime = true;
+                console.log("Giving current video time of " + document.getElementsByTagName("video")[0] + " to server.");
+                this.setVideoPosition(document.getElementsByTagName("video")[0].currentTime);
             
             // Unknown message
             } else {
@@ -267,12 +283,20 @@ class DisneyPlusTogether {
     }
 
     setVideoPosition(position) {
-        this._ws.send(`SET_POS\uffff${this._gtk}\uffff${position}`);
+        if(!this.justGaveTime)
+            this._ws.send(`SET_POS\uffff${this._gtk}\uffff${position}`);
+        else
+            this.justGaveTime = false;
     }
 
     sendMessage(message) {
         // Send a message to the group members
         this._ws.send(`CHAT\uffff${this._gtk}\uffff${message}`);
+    }
+
+    requestVideoPosition() {
+        // Send a message to the server requesting current video data from the host
+        this._ws.send(`GET_POS\uffff${this._gtk}\uffff$`);
     }
 };
 
@@ -298,12 +322,29 @@ function initializeVidListeners() {
         if(document.getElementsByTagName("video")[0].currentTime - lastTime >= -1 && document.getElementsByTagName("video")[0].currentTime - lastTime <= 1) {
             lastTime = document.getElementsByTagName("video")[0].currentTime;
         } else {
-            if(!dpt.justSet)
+            if(!dpt.justSet && !dpt.justGaveTime)
                 dpt.setVideoPosition(document.getElementsByTagName("video")[0].currentTime);
             lastTime = document.getElementsByTagName("video")[0].currentTime;
             dpt.justSet = false;
+            dpt.justGaveTime = false;
         }
     }
+    document.getElementsByTagName("video")[0].onwaiting = () => {
+        // Mark video as waiting for buffer
+        dpt.buffering = true;
+    }
+    document.getElementsByTagName("video")[0].onplaying = () => {
+        // If video was buffering, request position from host
+        if(dpt.buffering && !dpt.justSet) {
+            if(!dpt.createdGroup)
+                dpt.requestVideoPosition();
+            else
+                dpt.setVideoPosition(document.getElementsByTagName("video")[0].currentTime);
+            dpt.buffering = false;
+            dpt.justSet = false;
+        }
+    }
+    
 }
 
 // Handle requests from the extension

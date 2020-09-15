@@ -261,6 +261,26 @@ async def main(websocket, path):
                 print(f"SET_POS: Client with display name {connections[websocket]} provided an invalid group.")
                 await websocket.send("FAIL\uffffSP_INVALID_GROUP")
         
+        # Client requesting to get video time
+        elif message[:8] == "GET_POS\uffff":
+            # Get parameters
+            try:
+                params = message.split("\uffff")
+                params[2]
+            except IndexError:
+                # Client did not provide enough parameters to join group
+                print("GET_POS: Client did not provide enough parameters.")
+                await websocket.send("FAIL\uffffGP_MISSING_PARAMETERS")
+                return
+            
+            # Ensure client did NOT create the group (since the group creator should be setting and not getting the time)
+            if groups[params[1]][0] != websocket:
+                # Ask the group creator for the current position
+                await groups[params[1]][0].send("GET_POS\uffff")
+            else:
+                print("GET_POS: Client was the group creator.")
+                await websocket.send("FAIL\uffffGP_GROUP_CREATOR")
+
         # Client sending message
         elif message[:5] == "CHAT\uffff":
             # Get parameters
